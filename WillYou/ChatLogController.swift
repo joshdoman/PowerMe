@@ -54,9 +54,12 @@ class ChatLogController: UICollectionViewController, UITextFieldDelegate, UIColl
             }, withCancel: nil)
             
         }, withCancel: nil)
+        
+        userMessagesRef.observeSingleEvent(of: .childRemoved, with: {
+            (snapshot) in
+            _ = self.navigationController?.popViewController(animated: true)
+        })
     }
-    
-    
     
     let cellId = "cellId"
     

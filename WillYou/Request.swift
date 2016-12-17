@@ -11,6 +11,7 @@ import UIKit
 class Request: NSObject {
     
     var requestId: String?
+    var helperId: String?
     var fromId: String?
     var charger: String?
     var message: String?

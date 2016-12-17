@@ -10,32 +10,56 @@ import Firebase
 
 extension ConfirmController {
     
-    func handleCancel() {    
-        helpController?.showHelpButton()
-        
-        FIRDatabase.database().reference().child("user-messages").child((user?.uid!)!)
-        
-        let ref = FIRDatabase.database().reference().child("outstanding-requests-by-user").child((user?.uid!)!)
-        
-        ref.observeSingleEvent(of: .childAdded, with: {
-            (snapshot) in
-            
-            FIRDatabase.database().reference().child("outstanding-requests").child(snapshot.key).removeValue()
-            FIRDatabase.database().reference().child("requests").child(snapshot.key).removeValue()
-            FIRDatabase.database().reference().child("user-requests").child((self.user?.uid)!).child(snapshot.key).removeValue()
-            ref.removeValue()
-            
-            self.helpController?.masterController?.removeAllMessages()
-            
-        }, withCancel: nil)
-        
-        UserDefaults.standard.setHasPendingRequest(value: false)
-        
+    func handleCancel() {
+        let alertController = UIAlertController(title: "Are you sure?", message: nil, preferredStyle: UIAlertControllerStyle.alert)
+        alertController.addAction(UIAlertAction(title: "Oops!", style: UIAlertActionStyle.default, handler: nil))
+        alertController.addAction(UIAlertAction(title: "Yes", style: UIAlertActionStyle.default, handler: { action -> Void in
+            self.handleConfirmedCancel()
+        }))
+        self.present(alertController, animated: true, completion: nil)
+    }
+    
+    func handleConfirmedCancel() {
+        helpController?.masterController?.removeMyOutstandingRequest(helper: nil)
         self.dismiss(animated: true, completion: nil)
     }
     
     func handleDone() {
-        print("Done!")
+        let alertController = UIAlertController(title: "Were you able to return the charger?", message: nil, preferredStyle: UIAlertControllerStyle.alert)
+        alertController.addAction(UIAlertAction(title: "No", style: UIAlertActionStyle.default, handler: nil))
+        alertController.addAction(UIAlertAction(title: "Yes", style: UIAlertActionStyle.default, handler: { action -> Void in
+            self.handlePickHelper()
+        }))
+        self.present(alertController, animated: true, completion: nil)
+    }
+    
+    func handlePickHelper() {
+        navigationItem.title = "Select who helped you"
+        navigationItem.rightBarButtonItem = nil
+        navigationItem.leftBarButtonItem = nil
+        isSelectingHelper = true
+    }
+    
+    func showConfirmHelper(helper: User) {
+        let alertController = UIAlertController(title: "Please confirm that \((helper.name)!) helped you.", message: nil, preferredStyle: UIAlertControllerStyle.alert)
+        alertController.addAction(UIAlertAction(title: "No", style: UIAlertActionStyle.default, handler: { action -> Void in
+            self.isSelectingHelper = false
+            self.setupNavigationBar()
+            self.clearSelectedRows()
+        }))
+        alertController.addAction(UIAlertAction(title: "Yes", style: UIAlertActionStyle.default, handler: { action -> Void in
+            self.handleCompletedRequest(helper: helper)
+        }))
+        self.present(alertController, animated: true, completion: nil)
+    }
+    
+    func handleCompletedRequest(helper: User) {
+        helpController?.masterController?.removeMyOutstandingRequest(helper: helper)
+        dismiss(animated: true, completion: nil)
+    }
+    
+    func createCompletedRequest(helper: User) {
+        
     }
     
 }

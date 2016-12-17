@@ -259,6 +259,8 @@ class HelpController: UIViewController, UITextViewDelegate {
     func handleGetHelp() {
         helpButtonCenterYAnchor?.constant = -500
         messageViewCenterYAnchor?.constant = 0
+        pendingViewCenterYAnchor?.constant = 500
+        successLabelCenterYAnchor?.constant = 500
         
         UIView.animate(withDuration: 1, delay: 0, usingSpringWithDamping: 1, initialSpringVelocity: 1, options: .curveEaseOut, animations: {
             
@@ -268,25 +270,7 @@ class HelpController: UIViewController, UITextViewDelegate {
     }
     
     func handleCancel() {
-        guard let uid = user?.uid else {
-            return
-        }
-        
-        FIRDatabase.database().reference().child("user-messages").child(uid).removeAllObservers()
-        
-        FIRDatabase.database().reference().child("outstanding-requests-by-user").child(uid).observeSingleEvent(of: .childAdded, with: { (snapshot) in
-            
-            FIRDatabase.database().reference().child("requests").child(snapshot.key).removeValue()
-            FIRDatabase.database().reference().child("user-requests").child(uid).child(snapshot.key).removeValue()
-            
-            FIRDatabase.database().reference().child("outstanding-requests-by-user").child(uid).removeValue()
-            FIRDatabase.database().reference().child("outstanding-requests").child(snapshot.key).removeValue()
-
-        })
-        
-        UserDefaults.standard.setHasPendingRequest(value: false)
-        
-        showHelpButton()
+        masterController?.removeMyOutstandingRequest(helper: nil)
     }
     
     func showHelpButton() {

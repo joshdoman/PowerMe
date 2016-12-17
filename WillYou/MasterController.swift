@@ -36,7 +36,7 @@ class MasterController: UIPageViewController, UIPageViewControllerDelegate, UIPa
         checkIfUserIsLoggedIn()
     }
     
-    func goToGreenVC() {
+    func goToHelpController() {
         setViewControllers([VCArr[1]], direction: .forward, animated: true, completion: nil)
     }
     
@@ -182,6 +182,48 @@ class MasterController: UIPageViewController, UIPageViewControllerDelegate, UIPa
             
         }, withCancel: nil)
         
+    }
+    
+    //pass nil helper if want to completely delete request, give helper a value if want to make request permanent
+    func removeMyOutstandingRequest(helper: User?) {
+        guard let uid = FIRAuth.auth()?.currentUser?.uid else {
+            return
+        }
+        
+        FIRDatabase.database().reference().child("user-messages").child(uid).removeAllObservers()
+        
+        let ref = FIRDatabase.database().reference().child("outstanding-requests-by-user").child(uid)
+        
+        ref.observeSingleEvent(of: .childAdded, with: {
+            (snapshot) in
+            
+            let requestId = snapshot.key
+            
+            if let myHelper = helper {
+                self.addCompletedRequest(requestId: requestId, helper: myHelper)
+            } else {
+                FIRDatabase.database().reference().child("requests").child(requestId).removeValue()
+            }
+            
+            ref.removeValue()
+            
+            self.removeAllMessages()
+            
+        }, withCancel: nil)
+        
+        UserDefaults.standard.setHasPendingRequest(value: false)
+        helpController?.showHelpButton()
+    }
+    
+    func addCompletedRequest(requestId: String, helper: User) {
+        guard let uid = FIRAuth.auth()?.currentUser?.uid else {
+            return
+        }
+        
+        FIRDatabase.database().reference().child("user-requests").child(uid).child(helper.uid!).updateChildValues([requestId: 1])
+        FIRDatabase.database().reference().child("user-helps").child(helper.uid!).child(uid).updateChildValues([requestId: 1])
+        FIRDatabase.database().reference().child("requests").child(requestId).updateChildValues(["helperId": helper.uid!])
+        FIRDatabase.database().reference().child("helps").updateChildValues([requestId: 1])
     }
     
     func setCanSwipe(canSwipe: Bool) {

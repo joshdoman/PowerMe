@@ -41,19 +41,28 @@ class FeedController: UITableViewController {
     }
     
     func observeRequests() {
-        let ref = FIRDatabase.database().reference().child("outstanding-requests")
+        let ref = FIRDatabase.database().reference().child("outstanding-requests-by-user")
         ref.observe(.childAdded, with: { (snapshot) in
             
-            let requestId = snapshot.key
-            self.fetchRequestWithRequestId(requestId: requestId)
+            if let dictionary = snapshot.value as? [String: AnyObject] {
+                let requestIds = Array(dictionary.keys)
+                if let requestId = requestIds.first {
+                    self.fetchRequestWithRequestId(requestId: requestId)
+                }
+            }
             
         }, withCancel: nil)
         
         ref.observe(.childRemoved, with: { (snapshot) in
-            self.requestDictionary.removeValue(forKey: snapshot.key) //removes message if deleted from outside
-            self.attemptReloadOfTable()
+            if let dictionary = snapshot.value as? [String: AnyObject] {
+                let requestIds = Array(dictionary.keys)
+                if let requestId = requestIds.first {
+                    self.requestDictionary.removeValue(forKey: requestId) //removes message if deleted from outside
+                    self.attemptReloadOfTable()
+                }
+            }
+            
         }, withCancel: nil)
-        
     }
     
     private func fetchRequestWithRequestId(requestId: String) {
@@ -101,6 +110,17 @@ class FeedController: UITableViewController {
         return cell
     }
     
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        clearSelectedRows()
+    }
+    
+    func clearSelectedRows() {
+        if let selectedRow = self.tableView.indexPathForSelectedRow {
+            tableView.deselectRow(at: selectedRow, animated: true)
+        }
+    }
+    
     override func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
         return 72
     }
@@ -108,24 +128,22 @@ class FeedController: UITableViewController {
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         let request = requests[(indexPath as NSIndexPath).row]
         
-        FIRDatabase.database().reference().child("outstanding-requests-by-user").observeSingleEvent(of: .value, with: {
-            (snapshot) in
-            
-            if snapshot.hasChild((self.user?.uid)!) {
-                let alertController = UIAlertController(title: "You can't help someone when you're in need yourself!", message: nil, preferredStyle: UIAlertControllerStyle.alert)
-                alertController.addAction(UIAlertAction(title: "Ok", style: UIAlertActionStyle.default, handler: nil))
-                self.present(alertController, animated: true, completion: nil)
-            } else {
-                self.handleCanYouHelp(request: request)
-            }
-            
-        }, withCancel: nil)
+        if UserDefaults.standard.hasPendingRequest() {
+            let alertController = UIAlertController(title: "You can't help someone when you're in need yourself!", message: nil, preferredStyle: UIAlertControllerStyle.alert)
+            alertController.addAction(UIAlertAction(title: "Ok", style: UIAlertActionStyle.default, handler: nil))
+            self.present(alertController, animated: true, completion: nil)
+        } else {
+            handleCanYouHelp(request: request)
+        }
     }
     
     func handleCanYouHelp(request: Request) {
         //print(123)
         let alertController = UIAlertController(title: "Will you help?", message: nil, preferredStyle: UIAlertControllerStyle.alert)
-        alertController.addAction(UIAlertAction(title: "No", style: UIAlertActionStyle.default, handler: nil))
+        alertController.addAction(UIAlertAction(title: "No", style: UIAlertActionStyle.default, handler: { action -> Void in
+            self.clearSelectedRows()
+        }))
+
         alertController.addAction(UIAlertAction(title: "Yes", style: UIAlertActionStyle.default, handler: { action -> Void in
             self.handleYes(request: request)
         }))

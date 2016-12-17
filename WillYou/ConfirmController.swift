@@ -13,9 +13,7 @@ class ConfirmController: UITableViewController {
     
     var user: User? {
         didSet {
-            navigationItem.title = "Acceptances"
-            navigationItem.leftBarButtonItem = UIBarButtonItem(title: "Cancel", style: .plain, target: self, action: #selector(handleCancel))
-            navigationItem.rightBarButtonItem = UIBarButtonItem(title: "Done!", style: .plain, target: self, action: #selector(handleDone))
+            setupNavigationBar()
             observeAcceptances()
         }
     }
@@ -27,6 +25,7 @@ class ConfirmController: UITableViewController {
     
     var messages = [Message]()
     var messagesDictionary = [String: Message]()
+    var isSelectingHelper: Bool = false
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -35,6 +34,17 @@ class ConfirmController: UITableViewController {
         
         registerCells()
         
+    }
+    
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        clearSelectedRows()
+    }
+    
+    func clearSelectedRows() {
+        if let selectedRow = self.tableView.indexPathForSelectedRow {
+            tableView.deselectRow(at: selectedRow, animated: true)
+        }
     }
     
     func registerCells() {
@@ -139,7 +149,11 @@ class ConfirmController: UITableViewController {
             let user = User()
             user.uid = chatPartnerId
             user.setValuesForKeys(dictionary)
-            self.showChatControllerForUser(user)
+            if self.isSelectingHelper {
+                self.showConfirmHelper(helper: user)
+            } else {
+                self.showChatControllerForUser(user)
+            }
             
         }, withCancel: nil)
     }
@@ -148,6 +162,12 @@ class ConfirmController: UITableViewController {
         let chatLogController = ChatLogController(collectionViewLayout: UICollectionViewFlowLayout())
         chatLogController.user = user
         navigationController?.pushViewController(chatLogController, animated: true)
+    }
+    
+    func setupNavigationBar() {
+        navigationItem.title = "Acceptances"
+        navigationItem.leftBarButtonItem = UIBarButtonItem(title: "Cancel", style: .plain, target: self, action: #selector(handleCancel))
+        navigationItem.rightBarButtonItem = UIBarButtonItem(title: "Done!", style: .plain, target: self, action: #selector(handleDone))
     }
     
 }

@@ -38,17 +38,11 @@ extension HelpController {
                 print(error!)
                 return
             }
-            
-            
-            let userMessagesRef = FIRDatabase.database().reference().child("user-requests").child(fromId!)
-            
-            let messageId = childRef.key
-            userMessagesRef.updateChildValues([messageId: 1])
-            FIRDatabase.database().reference().child("outstanding-requests-by-user").child(fromId!).updateChildValues([messageId: 1])
-            FIRDatabase.database().reference().child("outstanding-requests").child(messageId).updateChildValues(["request": 1])
+                        
+            let requestId = childRef.key
+            FIRDatabase.database().reference().child("outstanding-requests-by-user").child(fromId!).updateChildValues([requestId: 1])
             
             self.showPending()
-            
         }
         
         UserDefaults.standard.setHasPendingRequest(value: true)
@@ -58,7 +52,7 @@ extension HelpController {
         helpButtonCenterYAnchor?.constant = -500
         messageViewCenterYAnchor?.constant = -500
         pendingViewCenterYAnchor?.constant = 0
-        successLabelCenterYAnchor?.constant = -500
+        successLabelCenterYAnchor?.constant = 500
         
         UIView.animate(withDuration: 1, delay: 0, usingSpringWithDamping: 1, initialSpringVelocity: 1, options: .curveEaseOut, animations: {
             
@@ -82,6 +76,7 @@ extension HelpController {
             FIRDatabase.database().reference().child("user-messages").child(uid).observeSingleEvent(of: .childAdded, with: {
                 (snapshot) in
                 
+                self.masterController?.goToHelpController()
                 self.showSuccessLabel()
                 
             }, withCancel: nil)
