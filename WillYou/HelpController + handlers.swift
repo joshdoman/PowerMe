@@ -12,6 +12,10 @@ extension HelpController {
     
     func handleSend() {
         
+        DispatchQueue.main.async {
+            self.masterController?.removeAllMessages()
+        }
+        
         let ref = FIRDatabase.database().reference().child("requests")
         let childRef = ref.childByAutoId()
         let fromId = FIRAuth.auth()?.currentUser!.uid
@@ -54,15 +58,64 @@ extension HelpController {
         helpButtonCenterYAnchor?.constant = -500
         messageViewCenterYAnchor?.constant = -500
         pendingViewCenterYAnchor?.constant = 0
+        successLabelCenterYAnchor?.constant = -500
         
         UIView.animate(withDuration: 1, delay: 0, usingSpringWithDamping: 1, initialSpringVelocity: 1, options: .curveEaseOut, animations: {
             
             self.view.layoutIfNeeded()
+            self.setupAcceptanceObserver()
             
         }, completion: nil)
         
         textBox.resignFirstResponder()
         
+    }
+    
+    func setupAcceptanceObserver() {
+        guard let uid = FIRAuth.auth()?.currentUser?.uid else {
+            return
+        }
+        
+        let when = DispatchTime.now() + 1
+        DispatchQueue.main.asyncAfter(deadline: when) {
+        
+            FIRDatabase.database().reference().child("user-messages").child(uid).observeSingleEvent(of: .childAdded, with: {
+                (snapshot) in
+                
+                self.showSuccessLabel()
+                
+            }, withCancel: nil)
+        
+        }
+        
+        
+    }
+    
+    func showSuccessLabel() {
+        helpButtonCenterYAnchor?.constant = -500
+        messageViewCenterYAnchor?.constant = -500
+        pendingViewCenterYAnchor?.constant = -700
+        successLabelCenterYAnchor?.constant = 0
+        
+        UIView.animate(withDuration: 1, delay: 0, usingSpringWithDamping: 1, initialSpringVelocity: 1, options: .curveEaseOut, animations: {
+            
+            self.view.layoutIfNeeded()
+            
+            let when = DispatchTime.now() + 1.5
+            DispatchQueue.main.asyncAfter(deadline: when) {
+                self.showConfirmController()
+            }
+            
+        }, completion: nil)
+    }
+    
+    func showConfirmController() {
+        let cc = ConfirmController()
+        cc.user = user
+        cc.helpController = self
+        let nc = UINavigationController(rootViewController: cc)
+        nc.modalTransitionStyle = .crossDissolve
+        self.helpController?.present(nc, animated: true, completion: nil)
     }
     
 }

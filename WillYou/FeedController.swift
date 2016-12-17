@@ -11,9 +11,11 @@ import Firebase
 
 class FeedController: UITableViewController {
     
+    var masterController: MasterController?
+    
     var user: User? {
         didSet {
-            navigationItem.title = "Outstanding Requests"
+            navigationItem.title = "Will you help?"
             observeRequests()
         }
     }
@@ -106,6 +108,32 @@ class FeedController: UITableViewController {
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         let request = requests[(indexPath as NSIndexPath).row]
         
+        FIRDatabase.database().reference().child("outstanding-requests-by-user").observeSingleEvent(of: .value, with: {
+            (snapshot) in
+            
+            if snapshot.hasChild((self.user?.uid)!) {
+                let alertController = UIAlertController(title: "You can't help someone when you're in need yourself!", message: nil, preferredStyle: UIAlertControllerStyle.alert)
+                alertController.addAction(UIAlertAction(title: "Ok", style: UIAlertActionStyle.default, handler: nil))
+                self.present(alertController, animated: true, completion: nil)
+            } else {
+                self.handleCanYouHelp(request: request)
+            }
+            
+        }, withCancel: nil)
+    }
+    
+    func handleCanYouHelp(request: Request) {
+        //print(123)
+        let alertController = UIAlertController(title: "Will you help?", message: nil, preferredStyle: UIAlertControllerStyle.alert)
+        alertController.addAction(UIAlertAction(title: "No", style: UIAlertActionStyle.default, handler: nil))
+        alertController.addAction(UIAlertAction(title: "Yes", style: UIAlertActionStyle.default, handler: { action -> Void in
+            self.handleYes(request: request)
+        }))
+        self.present(alertController, animated: true, completion: nil)
+    }
+    
+    func handleYes(request: Request) {
+        
         guard let chatPartnerId = request.fromId else {
             return
         }
@@ -126,6 +154,7 @@ class FeedController: UITableViewController {
     
     func showChatControllerForUser(_ user: User) {
         let chatLogController = ChatLogController(collectionViewLayout: UICollectionViewFlowLayout())
+        chatLogController.feedController = self
         chatLogController.user = user
         navigationController?.pushViewController(chatLogController, animated: true)
     }

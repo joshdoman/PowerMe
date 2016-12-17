@@ -98,7 +98,9 @@ class MasterController: UIPageViewController, UIPageViewControllerDelegate, UIPa
     func setupControllersWithUser(user: User) {
         profileController?.setupProfileControllerWithUser(user: user)
         helpController?.user = user
+        helpController?.masterController = self
         feedController?.user = user
+        feedController?.masterController = self
     }
     
     func fetchUserAndSetupViewControllers() {
@@ -137,5 +139,56 @@ class MasterController: UIPageViewController, UIPageViewControllerDelegate, UIPa
         let sc = SignInController()
         sc.modalTransitionStyle = .crossDissolve
         present(sc, animated: true, completion: nil)
+    }
+    
+    func removeAllMessages() {
+        guard let uid = FIRAuth.auth()?.currentUser?.uid else {
+            return
+        }
+        
+        let ref = FIRDatabase.database().reference().child("user-messages").child(uid)
+        
+        ref.observeSingleEvent(of: .value, with: {
+            (snapshot) in
+            
+            if let dictionary = snapshot.value as? [String: AnyObject] {
+                let messageIds = Array(dictionary.keys)
+                for id in messageIds {
+                    self.removeAllMessagesForUser(uid: id)
+                    ref.child(id).removeValue()
+                }
+            }
+            
+        }, withCancel: nil)
+        
+    }
+    
+    func removeAllMessagesForUser(uid: String) {
+        guard let myUid = FIRAuth.auth()?.currentUser?.uid else {
+            return
+        }
+        
+        let ref = FIRDatabase.database().reference().child("user-messages").child(uid).child(myUid)
+
+        ref.observeSingleEvent(of: .value, with: {
+            (snapshot) in
+            if let dictionary = snapshot.value as? [String: AnyObject] {
+                let messageIds = Array(dictionary.keys)
+                for id in messageIds {
+                    FIRDatabase.database().reference().child("messages").child(id).removeValue()
+                    ref.child(id).removeValue()
+                }
+            }
+            
+        }, withCancel: nil)
+        
+    }
+    
+    func setCanSwipe(canSwipe: Bool) {
+        if canSwipe {
+            self.dataSource = self
+        } else {
+            self.dataSource = nil
+        }
     }
 }

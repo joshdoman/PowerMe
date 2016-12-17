@@ -13,9 +13,13 @@ import AVFoundation
 
 class ChatLogController: UICollectionViewController, UITextFieldDelegate, UICollectionViewDelegateFlowLayout, UIImagePickerControllerDelegate, UINavigationControllerDelegate {
     
+    var feedController: FeedController?
+    
     var user: User? {
         didSet {
             navigationItem.title = user?.name
+            
+            feedController?.masterController?.setCanSwipe(canSwipe: false)
             
             observeMessages()
         }
@@ -68,6 +72,11 @@ class ChatLogController: UICollectionViewController, UITextFieldDelegate, UIColl
         collectionView?.keyboardDismissMode = .interactive
         
         setupKeyboardObservers()
+    }
+    
+    override func viewWillDisappear(_ animated: Bool) {
+        super.viewWillDisappear(animated)
+        feedController?.masterController?.setCanSwipe(canSwipe: true)
     }
     
     lazy var inputContainerView: ChatInputContainerView = {

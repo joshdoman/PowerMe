@@ -16,6 +16,8 @@ class HelpController: UIViewController, UITextViewDelegate {
     var user: User?
     
     var currentRequest: Request?
+    var helpController: HelpController?
+    var masterController: MasterController?
 
     lazy var getHelpButton: UIButton = {
         let button = UIButton(type: .system)
@@ -103,6 +105,17 @@ class HelpController: UIViewController, UITextViewDelegate {
         return label
     }()
     
+    lazy var successLabel: UILabel = {
+        let label = UILabel()
+        label.text = "Success!"
+        label.numberOfLines = 1
+        label.textAlignment = NSTextAlignment.center
+        label.font = label.font.withSize(45)
+        label.textColor = UIColor(r: 110, g: 151, b: 261)
+        label.translatesAutoresizingMaskIntoConstraints = false
+        return label
+    }()
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         
@@ -110,6 +123,7 @@ class HelpController: UIViewController, UITextViewDelegate {
         textBox.delegate = self
         
         view.backgroundColor = .white
+        self.helpController = self
         
         setupViews()
         
@@ -145,11 +159,13 @@ class HelpController: UIViewController, UITextViewDelegate {
     var helpButtonCenterYAnchor: NSLayoutConstraint?
     var messageViewCenterYAnchor: NSLayoutConstraint?
     var pendingViewCenterYAnchor: NSLayoutConstraint?
+    var successLabelCenterYAnchor: NSLayoutConstraint?
     
     func setupViews() {
         view.addSubview(getHelpButton)
         view.addSubview(messageView)
         view.addSubview(pendingView)
+        view.addSubview(successLabel)
         
         messageView.addSubview(textBox)
         messageView.addSubview(sendButton)
@@ -195,6 +211,11 @@ class HelpController: UIViewController, UITextViewDelegate {
         
         cancelButton2.centerXAnchor.constraint(equalTo: pendingView.centerXAnchor).isActive = true
         cancelButton2.bottomAnchor.constraint(equalTo: pendingView.bottomAnchor).isActive = true
+        
+        successLabel.centerXAnchor.constraint(equalTo: view.centerXAnchor).isActive = true
+        successLabelCenterYAnchor = successLabel.centerYAnchor.constraint(equalTo: view.centerYAnchor)
+        successLabelCenterYAnchor?.constant = 500
+        successLabelCenterYAnchor?.isActive = true
     }
     
     func sizeOfString (string: String, constrainedToWidth width: Double, font: UIFont) -> CGSize {
@@ -251,6 +272,8 @@ class HelpController: UIViewController, UITextViewDelegate {
             return
         }
         
+        FIRDatabase.database().reference().child("user-messages").child(uid).removeAllObservers()
+        
         FIRDatabase.database().reference().child("outstanding-requests-by-user").child(uid).observeSingleEvent(of: .childAdded, with: { (snapshot) in
             
             FIRDatabase.database().reference().child("requests").child(snapshot.key).removeValue()
@@ -267,20 +290,20 @@ class HelpController: UIViewController, UITextViewDelegate {
     }
     
     func showHelpButton() {
+        textBox.resignFirstResponder()
+        textBox.text = nil
+        textViewDidEndEditing(textBox)
+
         helpButtonCenterYAnchor?.constant = 0
         messageViewCenterYAnchor?.constant = 500
         pendingViewCenterYAnchor?.constant = 500
+        successLabelCenterYAnchor?.constant = 500
         
         UIView.animate(withDuration: 1, delay: 0, usingSpringWithDamping: 1, initialSpringVelocity: 1, options: .curveEaseOut, animations: {
             
             self.view.layoutIfNeeded()
             
         }, completion: nil)
-    }
-    
-    
-    func handleEndEditing() {
-        resignFirstResponder()
     }
     
     func checkIfHasPendingRequest() {

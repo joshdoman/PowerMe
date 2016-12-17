@@ -114,6 +114,8 @@ class ProfileController: UIViewController, UIImagePickerControllerDelegate, UINa
             print(logoutError)
         }
         
+        FIRDatabase.database().reference().child("user-messages").removeAllObservers()
+        
         masterController?.handleLogout()
     }
 
