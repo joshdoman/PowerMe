@@ -76,13 +76,17 @@ extension HelpController {
             FIRDatabase.database().reference().child("user-messages").child(uid).observeSingleEvent(of: .childAdded, with: {
                 (snapshot) in
                 
-                self.masterController?.goToHelpController()
+                let currIndex = self.masterController?.currentIndex
+                //print(currIndex)
+                if currIndex != 1 {
+                    self.masterController?.goLeftToHelpController(goLeft: currIndex == 2)
+                }
+
                 self.showSuccessLabel()
                 
             }, withCancel: nil)
         
         }
-        
         
     }
     

@@ -9,28 +9,39 @@
 import UIKit
 import Firebase
 
-class RequestCell: UITableViewCell {
+class MessageCell: UITableViewCell {
     
     var request: Request? {
         didSet {
-            
-            setupNameAndProfileImage()
-            
-            detailTextLabel?.text = request?.message
-            
-            if let seconds = request?.timestamp?.doubleValue {
-                let timestampDate = Date(timeIntervalSince1970: seconds)
-                
-                let dateFormatter = DateFormatter()
-                dateFormatter.dateFormat = "hh:mm:ss a"
-                timeLabel.text = dateFormatter.string(from: timestampDate)
-            }
+            fromId = request?.fromId
+            setupCell(text: (request?.message)!, timestamp: (request?.timestamp)!)
         }
     }
     
+    var message: Message? {
+        didSet {
+            fromId = message?.fromId
+            setupCell(text: (message?.text)!, timestamp: (message?.timestamp)!)
+        }
+    }
+    
+    func setupCell(text: String, timestamp: NSNumber) {
+        setupNameAndProfileImage()
+        
+        detailTextLabel?.text = text
+        
+        let timestampDate = Date(timeIntervalSince1970: timestamp.doubleValue)
+            
+        let dateFormatter = DateFormatter()
+        dateFormatter.dateFormat = "hh:mm:ss a"
+        timeLabel.text = dateFormatter.string(from: timestampDate)
+    }
+    
+    var fromId: String?
+    
     fileprivate func setupNameAndProfileImage() {
         
-        if let fromId = request?.fromId {
+        if let fromId = fromId {
             let ref = FIRDatabase.database().reference().child("users").child(fromId)
             ref.observeSingleEvent(of: .value, with: { (snapshot) in
                 

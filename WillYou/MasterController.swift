@@ -17,6 +17,7 @@ class MasterController: UIPageViewController, UIPageViewControllerDelegate, UIPa
     var profileController: ProfileController?
     
     var user: User?
+    var currentIndex: Int = 1
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -25,19 +26,26 @@ class MasterController: UIPageViewController, UIPageViewControllerDelegate, UIPa
         
         feedController = FeedController()
         helpController = HelpController()
+        helpController?.view.tag = 1
         profileController = ProfileController()
+        profileController?.view.tag = 0
         
-        profileController?.masterController = self
+        let nc = UINavigationController(rootViewController: feedController!)
+        nc.view.tag = 2
         
-        VCArr = [profileController!, helpController!, UINavigationController(rootViewController: feedController!)]
+        VCArr = [profileController!, helpController!, nc]
         
         setViewControllers([VCArr[1]], direction: .forward, animated: true, completion: nil)
         
         checkIfUserIsLoggedIn()
     }
     
-    func goToHelpController() {
-        setViewControllers([VCArr[1]], direction: .forward, animated: true, completion: nil)
+    func goLeftToHelpController(goLeft: Bool) {
+        if goLeft {
+            setViewControllers([VCArr[1]], direction: .reverse, animated: true, completion: nil)
+        } else {
+            setViewControllers([VCArr[1]], direction: .forward, animated: true, completion: nil)
+        }
     }
     
     override init(transitionStyle style: UIPageViewControllerTransitionStyle, navigationOrientation: UIPageViewControllerNavigationOrientation, options: [String : Any]? = nil) {
@@ -57,6 +65,12 @@ class MasterController: UIPageViewController, UIPageViewControllerDelegate, UIPa
                 view.backgroundColor = .clear
             }
         }
+    }
+    
+    func pageViewController(_ pageViewController: UIPageViewController, didFinishAnimating finished: Bool, previousViewControllers: [UIViewController], transitionCompleted completed: Bool) {
+        guard completed else { return }
+        
+        currentIndex = pageViewController.viewControllers!.first!.view.tag //Page Index
     }
     
     func pageViewController(_ pageViewController: UIPageViewController, viewControllerBefore viewController: UIViewController) -> UIViewController? {
@@ -97,6 +111,7 @@ class MasterController: UIPageViewController, UIPageViewControllerDelegate, UIPa
     
     func setupControllersWithUser(user: User) {
         profileController?.setupProfileControllerWithUser(user: user)
+        profileController?.masterController = self
         helpController?.user = user
         helpController?.masterController = self
         feedController?.user = user

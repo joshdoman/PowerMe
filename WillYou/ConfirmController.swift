@@ -48,7 +48,7 @@ class ConfirmController: UITableViewController {
     }
     
     func registerCells() {
-        tableView.register(AccepterCell.self, forCellReuseIdentifier: accepterCellId)
+        tableView.register(MessageCell.self, forCellReuseIdentifier: accepterCellId)
     }
     
     func observeAcceptances() {
@@ -121,7 +121,7 @@ class ConfirmController: UITableViewController {
     }
     
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let cell = tableView.dequeueReusableCell(withIdentifier: accepterCellId, for: indexPath) as! AccepterCell
+        let cell = tableView.dequeueReusableCell(withIdentifier: accepterCellId, for: indexPath) as! MessageCell
         
         let message = messages[indexPath.row]
         cell.message = message

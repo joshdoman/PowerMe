@@ -37,7 +37,7 @@ class FeedController: UITableViewController {
     }
     
     func registerCells() {
-        tableView.register(RequestCell.self, forCellReuseIdentifier: requestCellId)
+        tableView.register(MessageCell.self, forCellReuseIdentifier: requestCellId)
     }
     
     func observeRequests() {
@@ -103,7 +103,7 @@ class FeedController: UITableViewController {
     }
     
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let cell = tableView.dequeueReusableCell(withIdentifier: requestCellId, for: indexPath) as! RequestCell
+        let cell = tableView.dequeueReusableCell(withIdentifier: requestCellId, for: indexPath) as! MessageCell
         
         cell.request = requests[indexPath.row]
         
@@ -176,5 +176,5 @@ class FeedController: UITableViewController {
         chatLogController.user = user
         navigationController?.pushViewController(chatLogController, animated: true)
     }
-    
+        
 }
