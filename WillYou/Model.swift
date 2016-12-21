@@ -10,6 +10,6 @@ import Firebase
 
 class Model {
     
-    static let options = ["2010 Mac Charger", "2013 Mac Charger", "2016 Mac Charger", "Surface Charger"]
+    static let options = ["45W Mac MagSafe", "85W Mac MagSafe", "USB-C Charger"]
     
 }

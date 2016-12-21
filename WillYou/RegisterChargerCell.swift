@@ -12,6 +12,14 @@ class RegisterChargerCell: UICollectionViewCell, UIPickerViewDelegate, UIPickerV
     
     var selectedCharger: String!
     
+    let chargerImageView: UIImageView = {
+        let imageView = UIImageView()
+        imageView.translatesAutoresizingMaskIntoConstraints = false
+        imageView.layer.masksToBounds = true
+        imageView.contentMode = .scaleAspectFill
+        return imageView
+    }()
+    
     let chargerPicker: UIPickerView = {
         let picker = UIPickerView()
         picker.translatesAutoresizingMaskIntoConstraints = false
@@ -33,6 +41,7 @@ class RegisterChargerCell: UICollectionViewCell, UIPickerViewDelegate, UIPickerV
         super.init(frame: frame)
         
         selectedCharger = Model.options[0]
+        chargerImageView.image = UIImage(named: selectedCharger)
         
         setupViews()
     }
@@ -42,14 +51,20 @@ class RegisterChargerCell: UICollectionViewCell, UIPickerViewDelegate, UIPickerV
 
         addSubview(chargerPicker)
         addSubview(titleView)
+        addSubview(chargerImageView)
         
         titleView.centerXAnchor.constraint(equalTo: centerXAnchor).isActive = true
-        titleView.bottomAnchor.constraint(equalTo: chargerPicker.topAnchor, constant: 10).isActive = true
+        titleView.centerYAnchor.constraint(equalTo: centerYAnchor, constant: -10).isActive = true
         titleView.widthAnchor.constraint(equalTo: widthAnchor, constant: -50).isActive = true
         titleView.heightAnchor.constraint(equalToConstant: 100).isActive = true
         
+        chargerImageView.centerXAnchor.constraint(equalTo: centerXAnchor).isActive = true
+        chargerImageView.bottomAnchor.constraint(equalTo: titleView.topAnchor, constant: -20).isActive = true
+        chargerImageView.heightAnchor.constraint(equalToConstant: 150).isActive = true
+        chargerImageView.widthAnchor.constraint(equalToConstant: 200).isActive = true
+        
         chargerPicker.centerXAnchor.constraint(equalTo: centerXAnchor).isActive = true
-        chargerPicker.centerYAnchor.constraint(equalTo: centerYAnchor).isActive = true
+        chargerPicker.topAnchor.constraint(equalTo: titleView.bottomAnchor, constant: -50).isActive = true
         chargerPicker.widthAnchor.constraint(equalTo: widthAnchor, constant: -100).isActive = true
         chargerPicker.heightAnchor.constraint(equalToConstant: 200).isActive = true
         
@@ -71,6 +86,7 @@ class RegisterChargerCell: UICollectionViewCell, UIPickerViewDelegate, UIPickerV
     
     func pickerView(_ pickerView: UIPickerView, didSelectRow row: Int, inComponent component: Int) {
         selectedCharger = Model.options[row]
+        chargerImageView.image = UIImage(named: selectedCharger)
     }
     
     required init?(coder aDecoder: NSCoder) {

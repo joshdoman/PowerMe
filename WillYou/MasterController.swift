@@ -14,7 +14,7 @@ class MasterController: UIPageViewController, UIPageViewControllerDelegate, UIPa
     var VCArr: [UIViewController]!
     var feedController: FeedController?
     var helpController: HelpController?
-    var profileController: ProfileController?
+    var profileController: ProfileController2?
     
     var user: User?
     var currentIndex: Int = 1
@@ -27,7 +27,7 @@ class MasterController: UIPageViewController, UIPageViewControllerDelegate, UIPa
         feedController = FeedController()
         helpController = HelpController()
         helpController?.view.tag = 1
-        profileController = ProfileController()
+        profileController = ProfileController2()
         profileController?.view.tag = 0
         
         let nc = UINavigationController(rootViewController: feedController!)

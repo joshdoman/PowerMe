@@ -14,33 +14,34 @@ class MessageCell: UITableViewCell {
     var request: Request? {
         didSet {
             fromId = request?.fromId
-            setupCell(text: (request?.message)!, timestamp: (request?.timestamp)!)
+            setupCell(text: request?.message, timestamp: request?.timestamp)
         }
     }
     
     var message: Message? {
         didSet {
-            fromId = message?.fromId
-            setupCell(text: (message?.text)!, timestamp: (message?.timestamp)!)
+            fromId = message?.chatPartnerId()
+            setupCell(text: message?.text, timestamp: message?.timestamp)
         }
     }
     
-    func setupCell(text: String, timestamp: NSNumber) {
+    func setupCell(text: String?, timestamp: NSNumber?) {
         setupNameAndProfileImage()
         
         detailTextLabel?.text = text
         
-        let timestampDate = Date(timeIntervalSince1970: timestamp.doubleValue)
+        if let timestamp = timestamp {
+            let timestampDate = Date(timeIntervalSince1970: timestamp.doubleValue)
             
-        let dateFormatter = DateFormatter()
-        dateFormatter.dateFormat = "hh:mm:ss a"
-        timeLabel.text = dateFormatter.string(from: timestampDate)
+            let dateFormatter = DateFormatter()
+            dateFormatter.dateFormat = "hh:mm:ss a"
+            timeLabel.text = dateFormatter.string(from: timestampDate)
+        }
     }
     
     var fromId: String?
     
     fileprivate func setupNameAndProfileImage() {
-        
         if let fromId = fromId {
             let ref = FIRDatabase.database().reference().child("users").child(fromId)
             ref.observeSingleEvent(of: .value, with: { (snapshot) in
@@ -55,7 +56,6 @@ class MessageCell: UITableViewCell {
                 
             }, withCancel: nil)
         }
-
     }
     
     let profileImageView: UIImageView = {

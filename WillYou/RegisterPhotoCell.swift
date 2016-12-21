@@ -14,7 +14,7 @@ class RegisterPhotoCell: UICollectionViewCell {
     
     lazy var titleView: UILabel = {
         let label = UILabel()
-        label.text = "Upload your profile pic"
+        label.text = "Tap to upload profile pic"
         label.numberOfLines = 2
         label.textAlignment = NSTextAlignment.center
         label.font = label.font.withSize(30)
@@ -50,7 +50,7 @@ class RegisterPhotoCell: UICollectionViewCell {
         
         profileImageView.centerXAnchor.constraint(equalTo: centerXAnchor).isActive = true
         profileImageView.centerYAnchor.constraint(equalTo: centerYAnchor, constant: -100).isActive = true
-        profileImageView.widthAnchor.constraint(equalToConstant: 200).isActive = true
+        profileImageView.widthAnchor.constraint(equalTo: widthAnchor, constant: -50).isActive = true
         profileImageView.heightAnchor.constraint(equalToConstant: 200).isActive = true
         
         titleView.topAnchor.constraint(equalTo: profileImageView.bottomAnchor, constant: 50).isActive = true

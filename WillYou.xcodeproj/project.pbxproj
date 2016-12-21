@@ -9,6 +9,8 @@
 /* Begin PBXBuildFile section */
 		212755C51E037F7200C4C417 /* ConfirmController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 212755C41E037F7200C4C417 /* ConfirmController.swift */; };
 		212755C91E039CBD00C4C417 /* ConfirmController + handlers.swift in Sources */ = {isa = PBXBuildFile; fileRef = 212755C81E039CBD00C4C417 /* ConfirmController + handlers.swift */; };
+		217952E61E09F1060024590C /* ProfileController2.swift in Sources */ = {isa = PBXBuildFile; fileRef = 217952E51E09F1060024590C /* ProfileController2.swift */; };
+		217952E81E0A16DC0024590C /* SaveCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 217952E71E0A16DC0024590C /* SaveCell.swift */; };
 		21A7C5291E007E330076CFDD /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 21A7C5281E007E330076CFDD /* AppDelegate.swift */; };
 		21A7C52B1E007E330076CFDD /* SignInController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 21A7C52A1E007E330076CFDD /* SignInController.swift */; };
 		21A7C52E1E007E330076CFDD /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 21A7C52C1E007E330076CFDD /* Main.storyboard */; };
@@ -56,6 +58,8 @@
 /* Begin PBXFileReference section */
 		212755C41E037F7200C4C417 /* ConfirmController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ConfirmController.swift; sourceTree = "<group>"; };
 		212755C81E039CBD00C4C417 /* ConfirmController + handlers.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "ConfirmController + handlers.swift"; sourceTree = "<group>"; };
+		217952E51E09F1060024590C /* ProfileController2.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ProfileController2.swift; sourceTree = "<group>"; };
+		217952E71E0A16DC0024590C /* SaveCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SaveCell.swift; sourceTree = "<group>"; };
 		21A7C5251E007E330076CFDD /* WillYou.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = WillYou.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		21A7C5281E007E330076CFDD /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		21A7C52A1E007E330076CFDD /* SignInController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SignInController.swift; sourceTree = "<group>"; };
@@ -177,6 +181,7 @@
 				21A7C56B1E00F06F0076CFDD /* FeedController.swift */,
 				21A7C56D1E00F1D50076CFDD /* HelpController.swift */,
 				21A7C56F1E00F2370076CFDD /* ProfileController.swift */,
+				217952E51E09F1060024590C /* ProfileController2.swift */,
 				21A7C5791E0267430076CFDD /* ChatLogController.swift */,
 				212755C41E037F7200C4C417 /* ConfirmController.swift */,
 			);
@@ -205,6 +210,7 @@
 				21A7C55E1E0097F80076CFDD /* RegisterPhotoCell.swift */,
 				21A7C5621E00CE6F0076CFDD /* SuccessCell.swift */,
 				21A7C5771E022F1A0076CFDD /* MessageCell.swift */,
+				217952E71E0A16DC0024590C /* SaveCell.swift */,
 			);
 			name = Views;
 			sourceTree = "<group>";
@@ -450,6 +456,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				217952E81E0A16DC0024590C /* SaveCell.swift in Sources */,
 				21A7C52B1E007E330076CFDD /* SignInController.swift in Sources */,
 				212755C51E037F7200C4C417 /* ConfirmController.swift in Sources */,
 				21A7C5781E022F1A0076CFDD /* MessageCell.swift in Sources */,
@@ -464,6 +471,7 @@
 				21A7C56C1E00F06F0076CFDD /* FeedController.swift in Sources */,
 				21A7C5631E00CE6F0076CFDD /* SuccessCell.swift in Sources */,
 				21A7C55B1E00938C0076CFDD /* Model.swift in Sources */,
+				217952E61E09F1060024590C /* ProfileController2.swift in Sources */,
 				21A7C55F1E0097F80076CFDD /* RegisterPhotoCell.swift in Sources */,
 				21A7C5291E007E330076CFDD /* AppDelegate.swift in Sources */,
 				21A7C57E1E0267790076CFDD /* ChatInputContainerView.swift in Sources */,
