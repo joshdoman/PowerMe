@@ -9,8 +9,12 @@
 /* Begin PBXBuildFile section */
 		212755C51E037F7200C4C417 /* ConfirmController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 212755C41E037F7200C4C417 /* ConfirmController.swift */; };
 		212755C91E039CBD00C4C417 /* ConfirmController + handlers.swift in Sources */ = {isa = PBXBuildFile; fileRef = 212755C81E039CBD00C4C417 /* ConfirmController + handlers.swift */; };
+		212B1A631E11AD7300D38B01 /* Delegates.swift in Sources */ = {isa = PBXBuildFile; fileRef = 212B1A621E11AD7300D38B01 /* Delegates.swift */; };
 		217952E61E09F1060024590C /* ProfileController2.swift in Sources */ = {isa = PBXBuildFile; fileRef = 217952E51E09F1060024590C /* ProfileController2.swift */; };
 		217952E81E0A16DC0024590C /* SaveCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 217952E71E0A16DC0024590C /* SaveCell.swift */; };
+		21963BA21E18793F005636DC /* RequestCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 21963BA11E18793F005636DC /* RequestCell.swift */; };
+		21963BA41E1879F7005636DC /* FeedController2.swift in Sources */ = {isa = PBXBuildFile; fileRef = 21963BA31E1879F7005636DC /* FeedController2.swift */; };
+		21963BA61E189BAC005636DC /* HelpedCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 21963BA51E189BAC005636DC /* HelpedCell.swift */; };
 		21A7C5291E007E330076CFDD /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 21A7C5281E007E330076CFDD /* AppDelegate.swift */; };
 		21A7C52B1E007E330076CFDD /* SignInController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 21A7C52A1E007E330076CFDD /* SignInController.swift */; };
 		21A7C52E1E007E330076CFDD /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 21A7C52C1E007E330076CFDD /* Main.storyboard */; };
@@ -58,8 +62,12 @@
 /* Begin PBXFileReference section */
 		212755C41E037F7200C4C417 /* ConfirmController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ConfirmController.swift; sourceTree = "<group>"; };
 		212755C81E039CBD00C4C417 /* ConfirmController + handlers.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "ConfirmController + handlers.swift"; sourceTree = "<group>"; };
+		212B1A621E11AD7300D38B01 /* Delegates.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Delegates.swift; sourceTree = "<group>"; };
 		217952E51E09F1060024590C /* ProfileController2.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ProfileController2.swift; sourceTree = "<group>"; };
 		217952E71E0A16DC0024590C /* SaveCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SaveCell.swift; sourceTree = "<group>"; };
+		21963BA11E18793F005636DC /* RequestCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RequestCell.swift; sourceTree = "<group>"; };
+		21963BA31E1879F7005636DC /* FeedController2.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = FeedController2.swift; sourceTree = "<group>"; };
+		21963BA51E189BAC005636DC /* HelpedCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HelpedCell.swift; sourceTree = "<group>"; };
 		21A7C5251E007E330076CFDD /* WillYou.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = WillYou.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		21A7C5281E007E330076CFDD /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		21A7C52A1E007E330076CFDD /* SignInController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SignInController.swift; sourceTree = "<group>"; };
@@ -153,6 +161,7 @@
 				21A7C54C1E00831A0076CFDD /* View Controllers */,
 				21A7C5281E007E330076CFDD /* AppDelegate.swift */,
 				21A7C5481E007F170076CFDD /* Extensions.swift */,
+				212B1A621E11AD7300D38B01 /* Delegates.swift */,
 				21A7C52C1E007E330076CFDD /* Main.storyboard */,
 				21A7C52F1E007E330076CFDD /* Assets.xcassets */,
 				21A7C5311E007E330076CFDD /* LaunchScreen.storyboard */,
@@ -179,6 +188,7 @@
 				21A7C5521E008B040076CFDD /* RegisterController.swift */,
 				21A7C5691E00F0170076CFDD /* MasterController.swift */,
 				21A7C56B1E00F06F0076CFDD /* FeedController.swift */,
+				21963BA31E1879F7005636DC /* FeedController2.swift */,
 				21A7C56D1E00F1D50076CFDD /* HelpController.swift */,
 				21A7C56F1E00F2370076CFDD /* ProfileController.swift */,
 				217952E51E09F1060024590C /* ProfileController2.swift */,
@@ -210,6 +220,8 @@
 				21A7C55E1E0097F80076CFDD /* RegisterPhotoCell.swift */,
 				21A7C5621E00CE6F0076CFDD /* SuccessCell.swift */,
 				21A7C5771E022F1A0076CFDD /* MessageCell.swift */,
+				21963BA11E18793F005636DC /* RequestCell.swift */,
+				21963BA51E189BAC005636DC /* HelpedCell.swift */,
 				217952E71E0A16DC0024590C /* SaveCell.swift */,
 			);
 			name = Views;
@@ -297,7 +309,7 @@
 			isa = PBXProject;
 			attributes = {
 				LastSwiftUpdateCheck = 0810;
-				LastUpgradeCheck = 0810;
+				LastUpgradeCheck = 0820;
 				ORGANIZATIONNAME = "Josh Doman";
 				TargetAttributes = {
 					21A7C5241E007E330076CFDD = {
@@ -306,6 +318,9 @@
 						ProvisioningStyle = Automatic;
 						SystemCapabilities = {
 							com.apple.Keychain = {
+								enabled = 1;
+							};
+							com.apple.Push = {
 								enabled = 1;
 							};
 						};
@@ -463,6 +478,7 @@
 				21A7C56A1E00F0170076CFDD /* MasterController.swift in Sources */,
 				21A7C54B1E00805D0076CFDD /* SignInController + handlers.swift in Sources */,
 				21A7C5491E007F170076CFDD /* Extensions.swift in Sources */,
+				21963BA61E189BAC005636DC /* HelpedCell.swift in Sources */,
 				21A7C5581E008F9E0076CFDD /* RegisterChargerCell.swift in Sources */,
 				21A7C5671E00E7E90076CFDD /* RegisterController + handlers.swift in Sources */,
 				21A7C5801E02687C0076CFDD /* Message.swift in Sources */,
@@ -472,6 +488,7 @@
 				21A7C5631E00CE6F0076CFDD /* SuccessCell.swift in Sources */,
 				21A7C55B1E00938C0076CFDD /* Model.swift in Sources */,
 				217952E61E09F1060024590C /* ProfileController2.swift in Sources */,
+				212B1A631E11AD7300D38B01 /* Delegates.swift in Sources */,
 				21A7C55F1E0097F80076CFDD /* RegisterPhotoCell.swift in Sources */,
 				21A7C5291E007E330076CFDD /* AppDelegate.swift in Sources */,
 				21A7C57E1E0267790076CFDD /* ChatInputContainerView.swift in Sources */,
@@ -481,9 +498,11 @@
 				21A7C57A1E0267430076CFDD /* ChatLogController.swift in Sources */,
 				21A7C5511E0084F00076CFDD /* LoginController + handlers.swift in Sources */,
 				21A7C57C1E0267600076CFDD /* ChatMessageCell.swift in Sources */,
+				21963BA41E1879F7005636DC /* FeedController2.swift in Sources */,
 				21A7C54F1E0083580076CFDD /* LoginController.swift in Sources */,
 				21A7C5761E01E92E0076CFDD /* Request.swift in Sources */,
 				21A7C5701E00F2370076CFDD /* ProfileController.swift in Sources */,
+				21963BA21E18793F005636DC /* RequestCell.swift in Sources */,
 				21A7C5741E01E1190076CFDD /* HelpController + handlers.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -544,6 +563,7 @@
 				CLANG_WARN_INFINITE_RECURSION = YES;
 				CLANG_WARN_INT_CONVERSION = YES;
 				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
 				CLANG_WARN_SUSPICIOUS_MOVES = YES;
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
@@ -593,6 +613,7 @@
 				CLANG_WARN_INFINITE_RECURSION = YES;
 				CLANG_WARN_INT_CONVERSION = YES;
 				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
 				CLANG_WARN_SUSPICIOUS_MOVES = YES;
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;

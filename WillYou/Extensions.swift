@@ -7,8 +7,11 @@
 //
 
 import UIKit
+import Firebase
 
 let imageCache = NSCache<AnyObject, AnyObject>()
+let requestCache = NSCache<AnyObject, AnyObject>()
+let userCache = NSCache<AnyObject, AnyObject>()
 
 extension UIImageView {
     
@@ -35,15 +38,112 @@ extension UIImageView {
                 
                 if let downloadedImage = UIImage(data: data!) {
                     imageCache.setObject(downloadedImage, forKey: urlString as AnyObject)
-                    
+                    self.image = downloadedImage
                 }
-                
-                self.image = UIImage(data: data!)
             })
             
         }).resume()
     }
     
+}
+
+extension Request {
+    
+    func loadRequestUsingCacheWithRequestId(requestId: String, controller: RequestDelegate) {
+        
+        if let cachedRequest = requestCache.object(forKey: requestId as AnyObject) as? Request {
+            self.copyRequest(request: cachedRequest)
+            controller.fetchRequestsAndDoSomething()
+            return
+        }
+        
+        FIRDatabase.database().reference().child("requests").child(requestId).observeSingleEvent(of: .value, with: { (snapshot) in
+            
+            if let dictionary = snapshot.value as? [String: AnyObject] {
+                let request = Request()
+                request.setValuesForKeys(dictionary)
+                request.requestId = requestId
+                if let helperId = request.helperId {
+                    request.helper = User()
+                    request.helper?.loadUserUsingCacheWithUserId(uid: helperId, controller: controller, fromRequest: true)
+                }
+                self.copyRequest(request: request)
+                requestCache.setObject(self, forKey: requestId as AnyObject)
+            }
+            
+            if self.helperId == nil {
+                controller.fetchRequestsAndDoSomething()
+            }
+            
+        }, withCancel: nil)
+        
+    }
+}
+
+extension User {
+    
+    func loadUserUsingCacheWithUserId(uid: String, controller: UserDelegate) {
+        
+        if let cachedUser = userCache.object(forKey: uid as AnyObject) as? User {
+            self.copyUser(user: cachedUser)
+            controller.fetchUserAndDoSomething(user: self)
+            return
+        }
+        
+        FIRDatabase.database().reference().child("users").child(uid).observeSingleEvent(of: .value, with: { (snapshot) in
+            
+            if let dictionary = snapshot.value as? [String: AnyObject] {
+                self.setValuesForKeys(dictionary)
+                self.uid = uid
+                userCache.setObject(self, forKey: uid as AnyObject)
+            }
+            
+            controller.fetchUserAndDoSomething(user: self)
+            
+        }, withCancel: nil)
+        
+    }
+    
+    func loadUserUsingCacheWithUserId(uid: String, controller: RequestDelegate, fromRequest: Bool) {
+        
+        if let cachedUser = userCache.object(forKey: uid as AnyObject) as? User {
+            self.copyUser(user: cachedUser)
+            controller.fetchRequestsAndDoSomething()
+            return
+        }
+        
+        FIRDatabase.database().reference().child("users").child(uid).observeSingleEvent(of: .value, with: { (snapshot) in
+            
+            if let dictionary = snapshot.value as? [String: AnyObject] {
+                self.setValuesForKeys(dictionary)
+                self.uid = uid
+                userCache.setObject(self, forKey: uid as AnyObject)
+            }
+            
+            controller.fetchRequestsAndDoSomething()
+            
+        }, withCancel: nil)
+        
+    }
+    
+    func loadUserUsingCacheWithUserId(uid: String) {
+        
+        if let cachedUser = userCache.object(forKey: uid as AnyObject) as? User {
+            self.copyUser(user: cachedUser)
+            return
+        }
+        
+        FIRDatabase.database().reference().child("users").child(uid).observeSingleEvent(of: .value, with: { (snapshot) in
+            
+            if let dictionary = snapshot.value as? [String: AnyObject] {
+                self.setValuesForKeys(dictionary)
+                self.uid = uid
+                requestCache.setObject(self, forKey: uid as AnyObject)
+            }
+                        
+        }, withCancel: nil)
+        
+    }
 }
 
 extension UIView {
@@ -129,3 +229,19 @@ extension UserDefaults {
     
 }
 
+extension UILabel {
+    func textHeight(with width: CGFloat) -> CGFloat {
+        guard let text = text else {
+            return 0
+        }
+        return text.height(with: width, font: font)
+    }
+}
+
+extension String {
+    func height(with width: CGFloat, font: UIFont) -> CGFloat {
+        let maxSize = CGSize(width: width, height: CGFloat.greatestFiniteMagnitude)
+        let actualSize = self.boundingRect(with: maxSize, options: [.usesLineFragmentOrigin], attributes: [NSFontAttributeName: font], context: nil)
+        return actualSize.height
+    }
+}

@@ -9,10 +9,11 @@
 import UIKit
 import Firebase
 
-class MasterController: UIPageViewController, UIPageViewControllerDelegate, UIPageViewControllerDataSource {
+class MasterController: UIPageViewController, UIPageViewControllerDelegate, UIPageViewControllerDataSource, UserDelegate {
+    
     
     var VCArr: [UIViewController]!
-    var feedController: FeedController?
+    var feedController2: FeedController2?
     var helpController: HelpController?
     var profileController: ProfileController2?
     
@@ -24,13 +25,13 @@ class MasterController: UIPageViewController, UIPageViewControllerDelegate, UIPa
         self.delegate = self
         self.dataSource = self
         
-        feedController = FeedController()
+        feedController2 = FeedController2()
         helpController = HelpController()
         helpController?.view.tag = 1
         profileController = ProfileController2()
         profileController?.view.tag = 0
         
-        let nc = UINavigationController(rootViewController: feedController!)
+        let nc = UINavigationController(rootViewController: feedController2!)
         nc.view.tag = 2
         
         VCArr = [profileController!, helpController!, nc]
@@ -114,8 +115,8 @@ class MasterController: UIPageViewController, UIPageViewControllerDelegate, UIPa
         profileController?.masterController = self
         helpController?.user = user
         helpController?.masterController = self
-        feedController?.user = user
-        feedController?.masterController = self
+        feedController2?.user = user
+        feedController2?.masterController = self
     }
     
     func fetchUserAndSetupViewControllers() {
@@ -124,15 +125,12 @@ class MasterController: UIPageViewController, UIPageViewControllerDelegate, UIPa
             return
         }
         
-        FIRDatabase.database().reference().child("users").child(uid).observeSingleEvent(of: .value, with: { (snapshot) in
-            if let dictionary = snapshot.value as? [String: AnyObject] {
-                let user = User()
-                user.setValuesForKeys(dictionary)
-                user.uid = uid
-                self.setupControllersWithUser(user: user)
-            }
-            
-        }, withCancel: nil)
+        user = User()
+        user?.loadUserUsingCacheWithUserId(uid: uid, controller: self)
+    }
+    
+    func fetchUserAndDoSomething(user: User) {
+        setupControllersWithUser(user: user)
     }
     
     func checkIfUserIsLoggedIn() {
@@ -201,13 +199,13 @@ class MasterController: UIPageViewController, UIPageViewControllerDelegate, UIPa
     
     //pass nil helper if want to completely delete request, give helper a value if want to make request permanent
     func removeMyOutstandingRequest(helper: User?) {
-        guard let uid = FIRAuth.auth()?.currentUser?.uid else {
+        guard let uid = FIRAuth.auth()?.currentUser?.uid, let charger = user?.charger else {
             return
         }
         
         FIRDatabase.database().reference().child("user-messages").child(uid).removeAllObservers()
         
-        let ref = FIRDatabase.database().reference().child("outstanding-requests-by-user").child(uid)
+        let ref = FIRDatabase.database().reference().child("outstanding-requests-by-user").child(charger).child(uid)
         
         ref.observeSingleEvent(of: .childAdded, with: {
             (snapshot) in

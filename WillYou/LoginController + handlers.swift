@@ -31,19 +31,24 @@ extension LoginController {
                 return
             }
             
-            FIRDatabase.database().reference().child("outstanding-requests-by-user").observeSingleEvent(of: .value, with: { (snapshot) in
-                
-                if snapshot.hasChild(uid) {
-                    UserDefaults.standard.setHasPendingRequest(value: true)
-                } else {
-                    UserDefaults.standard.setHasPendingRequest(value: false)
-                }
-                
-                let mc = MasterController(transitionStyle: .scroll, navigationOrientation: .horizontal)
-                mc.modalTransitionStyle = .crossDissolve
-                self.present(mc, animated: true, completion: nil)
-                
-            })
+            let user = User()
+            user.loadUserUsingCacheWithUserId(uid: uid, controller: self)
+        })
+    }
+    
+    func fetchUserAndDoSomething(user: User) {
+        FIRDatabase.database().reference().child("outstanding-requests-by-user").child(user.charger!).observeSingleEvent(of: .value, with: { (snapshot) in
+            
+            if snapshot.hasChild(user.uid!) {
+                UserDefaults.standard.setHasPendingRequest(value: true)
+            } else {
+                UserDefaults.standard.setHasPendingRequest(value: false)
+            }
+            
+            let mc = MasterController(transitionStyle: .scroll, navigationOrientation: .horizontal)
+            mc.modalTransitionStyle = .crossDissolve
+            self.present(mc, animated: true, completion: nil)
+            
         })
     }
     

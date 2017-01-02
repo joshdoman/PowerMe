@@ -9,7 +9,7 @@
 import UIKit
 import Firebase
 
-class SaveCell: UITableViewCell {
+class SaveCell: UITableViewCell, UserDelegate {
     
     var user: User?
     
@@ -29,6 +29,7 @@ class SaveCell: UITableViewCell {
                     
                     if let dictionary = snapshot.value as? [String: AnyObject] {
                         self.myLabel.text = "\((dictionary["name"] as? String)!) saved you"
+                        self.myDetailLabel.text = self.request?.location
                         
                         if let profileImageUrl = dictionary["profileImageUrl"] as? String {
                             self.helperImageView.loadImageUsingCacheWithUrlString(urlString: profileImageUrl)
@@ -36,12 +37,14 @@ class SaveCell: UITableViewCell {
                     }
                     
                 }, withCancel: nil)
+                isHelper = false
             } else {
                 let ref = FIRDatabase.database().reference().child("users").child(fromId)
                 ref.observeSingleEvent(of: .value, with: { (snapshot) in
                     
                     if let dictionary = snapshot.value as? [String: AnyObject] {
                         self.myLabel.text = "You saved \((dictionary["name"] as? String)!)"
+                        self.myDetailLabel.text = self.request?.location
                         
                         if let profileImageUrl = dictionary["profileImageUrl"] as? String {
                             self.requesterImageView.loadImageUsingCacheWithUrlString(urlString: profileImageUrl)
@@ -49,6 +52,22 @@ class SaveCell: UITableViewCell {
                     }
                     
                 }, withCancel: nil)
+                isHelper = true
+            }
+        }
+    }
+    
+    var isHelper: Bool?
+    
+    fileprivate func setupNameAndProfileImage2() {
+        if let fromId = request?.fromId, let helpId = request?.helperId {
+            let otherUser = User()
+            if user?.uid == fromId {
+                isHelper = false
+                otherUser.loadUserUsingCacheWithUserId(uid: helpId, controller: self)
+            } else {
+                isHelper = true
+                otherUser.loadUserUsingCacheWithUserId(uid: fromId, controller: self)
             }
         }
     }
@@ -65,7 +84,6 @@ class SaveCell: UITableViewCell {
     let myDetailLabel: UILabel = {
         let label = UILabel()
         label.textAlignment = NSTextAlignment.right
-        label.text = "Houston Hall"
         label.font = label.font.withSize(12)
         label.translatesAutoresizingMaskIntoConstraints = false
         return label
@@ -129,7 +147,7 @@ class SaveCell: UITableViewCell {
     override func layoutSubviews() {
         super.layoutSubviews()
         
-        if helperImageView.image == nil {
+        if isHelper! {
             myLabelLeftAnchor?.isActive = true
             myDetailLabelLeftAnchor?.isActive = true
             myLabelRightAnchor?.isActive = false
@@ -141,6 +159,18 @@ class SaveCell: UITableViewCell {
             myLabelLeftAnchor?.isActive = false
             myDetailLabelLeftAnchor?.isActive = false
             //textLabel?.frame = CGRect(x: 96, y: textLabel!.frame.origin.y, width: textLabel!.frame.width, height: textLabel!.frame.height)
+        }
+    }
+    
+    func fetchUserAndDoSomething(user: User) {
+        myDetailLabel.text = request?.location
+        myLabel.text = isHelper! ? "You saved \(user.name!)" : "\(user.name!) saved you"
+        if let profileImageUrl = user.profileImageUrl {
+            if isHelper! {
+                requesterImageView.loadImageUsingCacheWithUrlString(urlString: profileImageUrl)
+            } else {
+                helperImageView.loadImageUsingCacheWithUrlString(urlString: profileImageUrl)
+            }
         }
     }
     

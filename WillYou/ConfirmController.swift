@@ -9,7 +9,7 @@
 import UIKit
 import Firebase
 
-class ConfirmController: UITableViewController {
+class ConfirmController: UITableViewController, UserDelegate {
     
     var user: User? {
         didSet {
@@ -140,22 +140,25 @@ class ConfirmController: UITableViewController {
             return
         }
         
-        let ref = FIRDatabase.database().reference().child("users").child(chatPartnerId)
-        ref.observeSingleEvent(of: .value, with: { (snapshot) in
-            guard let dictionary = snapshot.value as? [String: AnyObject] else {
-                return
-            }
-            
-            let user = User()
-            user.uid = chatPartnerId
-            user.setValuesForKeys(dictionary)
-            if self.isSelectingHelper {
-                self.showConfirmHelper(helper: user)
-            } else {
-                self.showChatControllerForUser(user)
-            }
-            
-        }, withCancel: nil)
+//        let ref = FIRDatabase.database().reference().child("users").child(chatPartnerId)
+//        ref.observeSingleEvent(of: .value, with: { (snapshot) in
+//            guard let dictionary = snapshot.value as? [String: AnyObject] else {
+//                return
+//            }
+//            
+//            let user = User()
+//            user.uid = chatPartnerId
+//            user.setValuesForKeys(dictionary)
+//            if self.isSelectingHelper {
+//                self.showConfirmHelper(helper: user)
+//            } else {
+//                self.showChatControllerForUser(user)
+//            }
+//            
+//        }, withCancel: nil)
+        
+        let user = User()
+        user.loadUserUsingCacheWithUserId(uid: chatPartnerId, controller: self)
     }
     
     func showChatControllerForUser(_ user: User) {
@@ -170,5 +173,12 @@ class ConfirmController: UITableViewController {
         navigationItem.rightBarButtonItem = UIBarButtonItem(title: "Done!", style: .plain, target: self, action: #selector(handleDone))
     }
     
+    func fetchUserAndDoSomething(user: User) {
+        if self.isSelectingHelper {
+            self.showConfirmHelper(helper: user)
+        } else {
+            self.showChatControllerForUser(user)
+        }
+    }
 }
 

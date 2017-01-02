@@ -89,8 +89,8 @@ extension RegisterController {
                 return
             }
             
-            let user = User()
-            user.setValuesForKeys(values)
+//            let user = User()
+//            user.setValuesForKeys(values)
             
             UserDefaults.standard.setIsLoggedIn(value: true)
             UserDefaults.standard.setHasPendingRequest(value: false)

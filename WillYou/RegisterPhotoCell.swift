@@ -50,11 +50,12 @@ class RegisterPhotoCell: UICollectionViewCell {
         
         profileImageView.centerXAnchor.constraint(equalTo: centerXAnchor).isActive = true
         profileImageView.centerYAnchor.constraint(equalTo: centerYAnchor, constant: -100).isActive = true
-        profileImageView.widthAnchor.constraint(equalTo: widthAnchor, constant: -50).isActive = true
+        profileImageView.widthAnchor.constraint(equalToConstant: 200).isActive = true
         profileImageView.heightAnchor.constraint(equalToConstant: 200).isActive = true
         
         titleView.topAnchor.constraint(equalTo: profileImageView.bottomAnchor, constant: 50).isActive = true
         titleView.centerXAnchor.constraint(equalTo: centerXAnchor).isActive = true
+        titleView.widthAnchor.constraint(equalTo: widthAnchor, constant: -70).isActive = true
 
     }
     

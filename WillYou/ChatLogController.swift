@@ -14,15 +14,78 @@ import AVFoundation
 class ChatLogController: UICollectionViewController, UITextFieldDelegate, UICollectionViewDelegateFlowLayout, UIImagePickerControllerDelegate, UINavigationControllerDelegate {
     
     var feedController: FeedController?
+    var feedController2: FeedController2?
+    var helpController: HelpController?
+    var isRequester: Bool?
     
     var user: User? {
         didSet {
-            navigationItem.title = user?.name
+            feedController2?.masterController?.setCanSwipe(canSwipe: false)
             
-            feedController?.masterController?.setCanSwipe(canSwipe: false)
-            
+            setupNavigationBar()
             observeMessages()
         }
+    }
+    
+    var request: Request?
+    
+    func setupNavigationBar() {
+        setupNavBarTitle()
+        navigationItem.leftBarButtonItem = UIBarButtonItem(title: "Cancel", style: .plain, target: self, action: #selector(handleDeny))
+        navigationItem.rightBarButtonItem = UIBarButtonItem(title: "Done!", style: .plain, target: self, action: #selector(handleDone))
+    }
+    
+    let profileImageView: UIImageView = {
+        let profileImageView = UIImageView()
+        profileImageView.translatesAutoresizingMaskIntoConstraints = false
+        profileImageView.contentMode = .scaleAspectFill
+        profileImageView.layer.cornerRadius = 20
+        profileImageView.clipsToBounds = true
+        return profileImageView
+    }()
+    
+    func setupNavBarTitle() {
+        let titleView = UIView()
+        titleView.frame = CGRect(x: 0, y: 0, width: 100, height: 40)
+        
+        let containerView = UIView()
+        containerView.translatesAutoresizingMaskIntoConstraints = false
+        titleView.addSubview(containerView)
+        
+        if let profileImageUrl = user?.profileImageUrl {
+            profileImageView.loadImageUsingCacheWithUrlString(urlString: profileImageUrl)
+        }
+        
+        containerView.addSubview(profileImageView)
+
+        profileImageView.leftAnchor.constraint(equalTo: containerView.leftAnchor).isActive = true
+        profileImageView.centerYAnchor.constraint(equalTo: containerView.centerYAnchor).isActive = true
+        profileImageView.widthAnchor.constraint(equalToConstant: 40).isActive = true
+        profileImageView.heightAnchor.constraint(equalToConstant: 40).isActive = true
+        
+        let nameLabel = UILabel()
+        
+        containerView.addSubview(nameLabel)
+        nameLabel.text = user?.name!
+        nameLabel.translatesAutoresizingMaskIntoConstraints = false
+        
+        nameLabel.leftAnchor.constraint(equalTo: profileImageView.rightAnchor, constant: 8).isActive = true
+        nameLabel.centerYAnchor.constraint(equalTo: profileImageView.centerYAnchor).isActive = true
+        nameLabel.rightAnchor.constraint(equalTo: containerView.rightAnchor).isActive = true
+        nameLabel.heightAnchor.constraint(equalTo: profileImageView.heightAnchor).isActive = true
+        
+        containerView.centerXAnchor.constraint(equalTo: titleView.centerXAnchor).isActive = true
+        containerView.centerYAnchor.constraint(equalTo: titleView.centerYAnchor).isActive = true
+        
+        self.navigationItem.titleView = titleView
+        
+        nameLabel.addGestureRecognizer(UITapGestureRecognizer(target: self, action: #selector(handleZoomProfileImage)))
+        profileImageView.addGestureRecognizer(UITapGestureRecognizer(target: self, action: #selector(handleZoomProfileImage)))
+        self.navigationItem.titleView?.addGestureRecognizer(UITapGestureRecognizer(target: self, action: #selector(handleZoomProfileImage)))
+    }
+    
+    func handleZoomProfileImage() {
+        self.performZoomInForStartingImageView(profileImageView)
     }
     
     var messages = [Message]()
@@ -58,7 +121,10 @@ class ChatLogController: UICollectionViewController, UITextFieldDelegate, UIColl
         userMessagesRef.observeSingleEvent(of: .childRemoved, with: {
             (snapshot) in
             _ = self.navigationController?.popViewController(animated: true)
+            self.helpController?.showPending()
+            self.dismiss(animated: true, completion: nil)
         })
+        
     }
     
     let cellId = "cellId"
@@ -79,7 +145,7 @@ class ChatLogController: UICollectionViewController, UITextFieldDelegate, UIColl
     
     override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated)
-        feedController?.masterController?.setCanSwipe(canSwipe: true)
+        feedController2?.masterController?.setCanSwipe(canSwipe: true)
     }
     
     lazy var inputContainerView: ChatInputContainerView = {
@@ -277,8 +343,6 @@ class ChatLogController: UICollectionViewController, UITextFieldDelegate, UIColl
             cell.textView.isHidden = true
         }
         
-        cell.playButton.isHidden = message.videoUrl == nil
-        
         return cell
     }
     
@@ -396,6 +460,8 @@ class ChatLogController: UICollectionViewController, UITextFieldDelegate, UIColl
     //my custom zooming logic
     func performZoomInForStartingImageView(_ startingImageView: UIImageView) {
         
+        resignFirstResponder()
+        
         self.startingImageView = startingImageView
         self.startingImageView?.isHidden = true
         
@@ -453,6 +519,42 @@ class ChatLogController: UICollectionViewController, UITextFieldDelegate, UIColl
                 self.startingImageView?.isHidden = false
             })
         }
+    }
+    
+    func handleDeny() {
+        removeMessageObserver()
+        let alertController = UIAlertController(title: "Are you sure you wish to cancel?", message: nil, preferredStyle: UIAlertControllerStyle.alert)
+        alertController.addAction(UIAlertAction(title: "No", style: UIAlertActionStyle.default, handler: nil))
+        alertController.addAction(UIAlertAction(title: "Yes", style: UIAlertActionStyle.default, handler: { action -> Void in
+            self.helpController?.handleCancel()
+            self.feedController2?.removeRequest(request: self.request!)
+            self.feedController2?.masterController?.removeAllMessages()
+            _ = self.navigationController?.popViewController(animated: true)
+            self.dismiss(animated: true, completion: nil)
+        }))
+        self.present(alertController, animated: true, completion: nil)
+    }
+    
+    func handleDone() {
+        removeMessageObserver()
+        let str = isRequester! ? "Please confirm that you have returned \(user?.name!)'s charger." : "Please confirm that \(user?.name!) has returned your charger."
+        let alertController = UIAlertController(title: str, message: nil, preferredStyle: UIAlertControllerStyle.alert)
+        alertController.addAction(UIAlertAction(title: "Cancel", style: UIAlertActionStyle.default, handler: nil))
+        alertController.addAction(UIAlertAction(title: "Confirm", style: UIAlertActionStyle.default, handler: { action -> Void in
+            self.helpController?.masterController?.removeMyOutstandingRequest(helper: self.user)
+            self.feedController2?.removeRequest(request: self.request!)
+            _ = self.navigationController?.popViewController(animated: true)
+            self.dismiss(animated: true, completion: nil)
+        }))
+        self.present(alertController, animated: true, completion: nil)
+    }
+    
+    func removeMessageObserver() {
+        guard let uid = FIRAuth.auth()?.currentUser?.uid, let toId = user?.uid else {
+            return
+        }
+        
+        FIRDatabase.database().reference().child("user-messages").child(uid).child(toId).removeAllObservers()
     }
 }
 

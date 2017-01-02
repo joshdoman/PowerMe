@@ -16,4 +16,12 @@ class User: NSObject {
     var charger: String?
     var profileImageUrl: String?
     
+    func copyUser(user: User) {
+        self.uid = user.uid
+        self.name = user.name
+        self.email = user.email
+        self.charger = user.charger
+        self.profileImageUrl = user.profileImageUrl
+    }
+    
 }

@@ -1,5 +1,5 @@
 //
-//  RequestCell.swift
+//  MessageCell.swift
 //  WillYou
 //
 //  Created by Josh Doman on 12/14/16.
@@ -9,26 +9,32 @@
 import UIKit
 import Firebase
 
-class MessageCell: UITableViewCell {
+class MessageCell: UITableViewCell, UserDelegate {
     
     var request: Request? {
         didSet {
-            fromId = request?.fromId
-            setupCell(text: request?.message, timestamp: request?.timestamp)
+            detailTextLabel?.text = nil
+            if request?.helperId == nil {
+                setupCell(fromId: request?.fromId, text: request?.message, timestamp: request?.timestamp)
+            } else {
+                //setupHelpCell()
+                setupCell(fromId: request?.helperId, text: request?.message, timestamp: request?.timestamp)
+            }
         }
     }
     
     var message: Message? {
         didSet {
-            fromId = message?.chatPartnerId()
-            setupCell(text: message?.text, timestamp: message?.timestamp)
+            setupCell(fromId: message?.chatPartnerId(), text: message?.text, timestamp: message?.timestamp)
         }
     }
     
-    func setupCell(text: String?, timestamp: NSNumber?) {
-        setupNameAndProfileImage()
+    func setupCell(fromId: String?, text: String?, timestamp: NSNumber?) {
+        setupNameAndProfileImage(fromId: fromId)
         
-        detailTextLabel?.text = text
+        if request?.helperId == nil {
+            detailTextLabel?.text = text
+        }
         
         if let timestamp = timestamp {
             let timestampDate = Date(timeIntervalSince1970: timestamp.doubleValue)
@@ -39,22 +45,46 @@ class MessageCell: UITableViewCell {
         }
     }
     
-    var fromId: String?
-    
-    fileprivate func setupNameAndProfileImage() {
+    fileprivate func setupNameAndProfileImage2(fromId: String?) {
         if let fromId = fromId {
             let ref = FIRDatabase.database().reference().child("users").child(fromId)
             ref.observeSingleEvent(of: .value, with: { (snapshot) in
                 
-                if let dictionary = snapshot.value as? [String: AnyObject] {
-                    self.textLabel?.text = dictionary["name"] as? String
+                if let dictionary1 = snapshot.value as? [String: AnyObject] {
                     
-                    if let profileImageUrl = dictionary["profileImageUrl"] as? String {
+                    if let profileImageUrl = dictionary1["profileImageUrl"] as? String {
                         self.profileImageView.loadImageUsingCacheWithUrlString(urlString: profileImageUrl)
+                    }
+                    
+                    if self.request?.helperId != nil {
+                        FIRDatabase.database().reference().child("users").child((self.request?.fromId)!).observeSingleEvent(of: .value, with: { (snapshot) in
+                            if let dictionary2 = snapshot.value as? [String: AnyObject] {
+                                //let att = [NSFontAttributeName : UIFont.boldSystemFont(ofSize: 15)]
+                                
+//                                var name1 = NSMutableAttributedString(string: (dictionary1["name"] as? String)!, attributes: att)
+//                                var name2 = NSMutableAttributedString(string: (dictionary2["name"] as? String)!, attributes: att)
+//                                
+//                                var middle = NSMutableAttributedString(string: "just saved")
+                                self.textLabel?.font = UIFont.systemFont(ofSize: 15)
+                                self.textLabel?.text = "\((dictionary1["name"] as? String)!) saved \((dictionary2["name"] as? String)!)"
+                            }
+                        }, withCancel: nil)
+                    } else {
+                        self.textLabel?.text = dictionary1["name"] as? String
                     }
                 }
                 
             }, withCancel: nil)
+        }
+    }
+    
+    var mainUser: User?
+    var secondUser: User?
+    
+    fileprivate func setupNameAndProfileImage(fromId: String?) {
+        if let fromId = fromId {
+            mainUser = User()
+            mainUser?.loadUserUsingCacheWithUserId(uid: fromId, controller: self)
         }
     }
     
@@ -102,6 +132,22 @@ class MessageCell: UITableViewCell {
     
     required init?(coder aDecoder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
+    }
+    
+    func fetchUserAndDoSomething(user: User) {
+        if secondUser == nil {
+            profileImageView.loadImageUsingCacheWithUrlString(urlString: user.profileImageUrl!)
+            if self.request?.helperId != nil {
+                secondUser = User()
+                secondUser?.loadUserUsingCacheWithUserId(uid: (self.request?.fromId)!, controller: self)
+            } else {
+                self.textLabel?.text = user.name
+            }
+        } else {
+            self.textLabel?.font = UIFont.systemFont(ofSize: 15)
+            self.textLabel?.text = "\((mainUser?.name)!) saved \((secondUser?.name)!)"
+        }
+
     }
     
 }

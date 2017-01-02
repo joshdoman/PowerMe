@@ -8,6 +8,7 @@
 
 import UIKit
 import Firebase
+import UserNotifications
 
 @UIApplicationMain
 class AppDelegate: UIResponder, UIApplicationDelegate {
@@ -22,13 +23,49 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         window = UIWindow(frame: UIScreen.main.bounds)
         window?.makeKeyAndVisible()
         
+        //bypass login page (no internet)
+//        UserDefaults.standard.setIsLoggedIn(value: true)
+//        UserDefaults.standard.setHasPendingRequest(value: false)
         if (UserDefaults.standard.isLoggedIn()) {
             window?.rootViewController = MasterController(transitionStyle: .scroll, navigationOrientation: .horizontal)
         } else {
             window?.rootViewController = SignInController()
         }
         
+        registerForPushNotifications(application: application)
+
         return true
+    }
+    
+    // Add the following methods method
+    @nonobjc func application(application: UIApplication, didRegisterUserNotificationSettings notificationSettings: UIUserNotificationSettings) {
+        if notificationSettings.types != .none {
+            application.registerForRemoteNotifications()
+        }
+    }
+    
+    // Register for push notifications
+    func registerForPushNotifications(application: UIApplication) {
+        let center = UNUserNotificationCenter.current()
+        center.requestAuthorization(options: [.alert, .sound, .badge]) { granted, error in
+            if let error = error {
+                print("Error: \(error.localizedDescription)")
+            } else {
+                application.registerForRemoteNotifications()
+            }
+        }
+    }
+    
+    // Getting device token
+    func application(_ application: UIApplication, didRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data) {
+        let deviceTokenString = deviceToken.reduce("", {$0 + String(format: "%02X", $1)})
+        print(deviceTokenString)
+    }
+    
+    // Failed to register for remote notificaitions
+    func application(_ application: UIApplication, didFailToRegisterForRemoteNotificationsWithError error: Error) {
+        print("Failed to register for remote notificaitions \(error)")
+        
     }
 
     func applicationWillResignActive(_ application: UIApplication) {

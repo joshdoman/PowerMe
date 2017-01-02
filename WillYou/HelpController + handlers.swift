@@ -21,17 +21,12 @@ extension HelpController {
         let fromId = FIRAuth.auth()?.currentUser!.uid
         
         let timestamp = NSNumber(value: Int(NSDate().timeIntervalSince1970))
-        let values: [String: AnyObject] = ["fromId": fromId as AnyObject, "timestamp": timestamp, "charger": user?.charger as AnyObject, "message": textBox.text as AnyObject]
+        let values: [String: AnyObject] = ["fromId": fromId as AnyObject, "timestamp": timestamp, "charger": user?.charger as AnyObject, "location": locationTextBox.text as AnyObject, "message": textBox.text as AnyObject]
         
-        let request = Request()
-        request.setValuesForKeys(values)
-        
-        //need to pull out auto generated id
-        let childString: String = String(describing: childRef)
-        let start = childString.index(childString.endIndex, offsetBy: -20)
-        let requestId = childString.substring(from: start)
-        request.requestId = requestId
-        currentRequest = request
+        //pulls out auto generated id
+//        let childString: String = String(describing: childRef)
+//        let start = childString.index(childString.endIndex, offsetBy: -20)
+//        let _ = childString.substring(from: start)
         
         childRef.updateChildValues(values) { (error, ref) in
             if error != nil {
@@ -40,7 +35,7 @@ extension HelpController {
             }
                         
             let requestId = childRef.key
-            FIRDatabase.database().reference().child("outstanding-requests-by-user").child(fromId!).updateChildValues([requestId: 1])
+            FIRDatabase.database().reference().child("outstanding-requests-by-user").child((self.user?.charger)!).child(fromId!).updateChildValues([requestId: 1])
             
             self.showPending()
         }
@@ -77,12 +72,13 @@ extension HelpController {
                 (snapshot) in
                 
                 let currIndex = self.masterController?.currentIndex
-                //print(currIndex)
                 if currIndex != 1 {
                     self.masterController?.goLeftToHelpController(goLeft: currIndex == 2)
                 }
 
-                self.showSuccessLabel()
+                //self.showSuccessLabel()
+
+                self.showSuccessLabelForUser(uid: snapshot.key)
                 
             }, withCancel: nil)
         
@@ -90,7 +86,7 @@ extension HelpController {
         
     }
     
-    func showSuccessLabel() {
+    func showSuccessLabelForUser(uid: String) {
         helpButtonCenterYAnchor?.constant = -500
         messageViewCenterYAnchor?.constant = -500
         pendingViewCenterYAnchor?.constant = -700
@@ -102,19 +98,24 @@ extension HelpController {
             
             let when = DispatchTime.now() + 1.5
             DispatchQueue.main.asyncAfter(deadline: when) {
-                self.showConfirmController()
+                let user = User()
+                user.loadUserUsingCacheWithUserId(uid: uid, controller: self)
             }
-            
         }, completion: nil)
     }
     
-    func showConfirmController() {
-        let cc = ConfirmController()
-        cc.user = user
-        cc.helpController = self
-        let nc = UINavigationController(rootViewController: cc)
+    func showChatController(user: User) {
+        let chatLogController = ChatLogController(collectionViewLayout: UICollectionViewFlowLayout())
+        chatLogController.user = user
+        chatLogController.helpController = self
+        chatLogController.isRequester = true
+        let nc = UINavigationController(rootViewController: chatLogController)
         nc.modalTransitionStyle = .crossDissolve
-        self.helpController?.present(nc, animated: true, completion: nil)
+        self.present(nc, animated: true, completion: nil)
+    }
+    
+    func fetchUserAndDoSomething(user: User) {
+        showChatController(user: user)
     }
     
 }

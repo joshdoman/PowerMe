@@ -8,7 +8,7 @@
 
 import UIKit
 
-class LoginController: UIViewController {
+class LoginController: UIViewController, UserDelegate {
         
     let inputsContainerView: UIView = {
         let view = UIView()
