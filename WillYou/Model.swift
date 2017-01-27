@@ -12,5 +12,7 @@ class Model {
     
     static let options = ["45W Mac MagSafe", "85W Mac MagSafe", "USB-C Charger"]
     static let blueColor = UIColor(r: 90, g: 131, b: 261)
+    static var currentToken: String?
+    static var currentUser: User?
     
 }

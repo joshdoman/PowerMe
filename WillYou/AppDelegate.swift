@@ -23,6 +23,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         window = UIWindow(frame: UIScreen.main.bounds)
         window?.makeKeyAndVisible()
         
+        registerForPushNotifications(application: application)
+        
         //bypass login page (no internet)
 //        UserDefaults.standard.setIsLoggedIn(value: true)
 //        UserDefaults.standard.setHasPendingRequest(value: false)
@@ -32,8 +34,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
             window?.rootViewController = SignInController()
         }
         
-        registerForPushNotifications(application: application)
-
         return true
     }
     
@@ -59,7 +59,14 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     // Getting device token
     func application(_ application: UIApplication, didRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data) {
         let deviceTokenString = deviceToken.reduce("", {$0 + String(format: "%02X", $1)})
-        print(deviceTokenString)
+        
+        Model.currentToken = deviceTokenString
+        
+        guard let uid = FIRAuth.auth()?.currentUser?.uid else {
+            return
+        }
+        
+        FIRDatabase.database().reference().child("users").child(uid).updateChildValues(["token": deviceTokenString])
     }
     
     // Failed to register for remote notificaitions

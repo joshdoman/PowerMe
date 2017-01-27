@@ -13,11 +13,16 @@ class MasterController: UIPageViewController, UIPageViewControllerDelegate, UIPa
     
     
     var VCArr: [UIViewController]!
-    var feedController2: FeedController2?
-    var helpController: HelpController?
-    var profileController: ProfileController2?
+    var feedController: FeedController!
+    var helpController: HelpController!
+    var profileController: ProfileController2!
     
-    var user: User?
+    var user: User? {
+        didSet {
+            Model.currentUser = user
+        }
+    }
+    
     var currentIndex: Int = 1
     
     override func viewDidLoad() {
@@ -25,16 +30,16 @@ class MasterController: UIPageViewController, UIPageViewControllerDelegate, UIPa
         self.delegate = self
         self.dataSource = self
         
-        feedController2 = FeedController2()
+        feedController = FeedController()
         helpController = HelpController()
         helpController?.view.tag = 1
         profileController = ProfileController2()
         profileController?.view.tag = 0
         
-        let nc = UINavigationController(rootViewController: feedController2!)
+        let nc = UINavigationController(rootViewController: feedController)
         nc.view.tag = 2
         
-        VCArr = [profileController!, helpController!, nc]
+        VCArr = [profileController, helpController, nc]
         
         setViewControllers([VCArr[1]], direction: .forward, animated: true, completion: nil)
         
@@ -69,9 +74,10 @@ class MasterController: UIPageViewController, UIPageViewControllerDelegate, UIPa
     }
     
     func pageViewController(_ pageViewController: UIPageViewController, didFinishAnimating finished: Bool, previousViewControllers: [UIViewController], transitionCompleted completed: Bool) {
-        guard completed else { return }
+        guard completed, let vc = pageViewController.viewControllers else { return }
+        guard let first = vc.first else { return }
         
-        currentIndex = pageViewController.viewControllers!.first!.view.tag //Page Index
+        currentIndex = first.view.tag //Page Index
     }
     
     func pageViewController(_ pageViewController: UIPageViewController, viewControllerBefore viewController: UIViewController) -> UIViewController? {
@@ -115,8 +121,8 @@ class MasterController: UIPageViewController, UIPageViewControllerDelegate, UIPa
         profileController?.masterController = self
         helpController?.user = user
         helpController?.masterController = self
-        feedController2?.user = user
-        feedController2?.masterController = self
+        feedController?.user = user
+        feedController?.masterController = self
     }
     
     func fetchUserAndSetupViewControllers() {
@@ -131,6 +137,7 @@ class MasterController: UIPageViewController, UIPageViewControllerDelegate, UIPa
     
     func fetchUserAndDoSomething(user: User) {
         setupControllersWithUser(user: user)
+        checkIfHasOutstandingRequest()
     }
     
     func checkIfUserIsLoggedIn() {
@@ -147,7 +154,36 @@ class MasterController: UIPageViewController, UIPageViewControllerDelegate, UIPa
         }
     }
     
+    func checkIfHasOutstandingRequest() {
+        guard let uid = user?.uid, let charger = user?.charger else {
+            return
+        }
+        
+        FIRDatabase.database().reference().child("outstanding-requests-by-user").child(charger).child(uid).observeSingleEvent(of: .childAdded, with: { (snapshot) in
+            
+            UserDefaults.standard.setHasPendingRequest(value: true)
+            self.helpController?.request = Request()
+            self.helpController?.request?.requestId = snapshot.key
+            self.helpController?.setupObserverOfMyRequest()
+            
+        }, withCancel: nil)
+    }
+    
     func handleLogout() {
+        guard let uid = FIRAuth.auth()?.currentUser?.uid else {
+            return
+        }
+        
+        do {
+            try FIRAuth.auth()?.signOut()
+        } catch let logoutError {
+            print(logoutError)
+        }
+        
+        FIRDatabase.database().reference().child("user-messages").removeAllObservers()
+        FIRDatabase.database().reference().child("helps").removeAllObservers()
+        FIRDatabase.database().reference().child("users").child(uid).child("token").removeValue()
+        
         UserDefaults.standard.setIsLoggedIn(value: false)
         let sc = SignInController()
         sc.modalTransitionStyle = .crossDissolve
@@ -229,13 +265,13 @@ class MasterController: UIPageViewController, UIPageViewControllerDelegate, UIPa
     }
     
     func addCompletedRequest(requestId: String, helper: User) {
-        guard let uid = FIRAuth.auth()?.currentUser?.uid else {
+        guard let uid = FIRAuth.auth()?.currentUser?.uid, let helperId = helper.uid else {
             return
         }
         
-        FIRDatabase.database().reference().child("user-requests").child(uid).child(helper.uid!).updateChildValues([requestId: 1])
-        FIRDatabase.database().reference().child("user-helps").child(helper.uid!).child(uid).updateChildValues([requestId: 1])
-        FIRDatabase.database().reference().child("requests").child(requestId).updateChildValues(["helperId": helper.uid!])
+        FIRDatabase.database().reference().child("user-requests").child(uid).child(helperId).updateChildValues([requestId: 1])
+        FIRDatabase.database().reference().child("user-helps").child(helperId).child(uid).updateChildValues([requestId: 1])
+        FIRDatabase.database().reference().child("requests").child(requestId).updateChildValues(["helperId": helperId])
         FIRDatabase.database().reference().child("helps").updateChildValues([requestId: 1])
     }
     
@@ -246,4 +282,5 @@ class MasterController: UIPageViewController, UIPageViewControllerDelegate, UIPa
             self.dataSource = nil
         }
     }
+    
 }

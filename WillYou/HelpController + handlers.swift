@@ -28,6 +28,8 @@ extension HelpController {
 //        let start = childString.index(childString.endIndex, offsetBy: -20)
 //        let _ = childString.substring(from: start)
         
+
+        
         childRef.updateChildValues(values) { (error, ref) in
             if error != nil {
                 print(error!)
@@ -36,6 +38,11 @@ extension HelpController {
                         
             let requestId = childRef.key
             FIRDatabase.database().reference().child("outstanding-requests-by-user").child((self.user?.charger)!).child(fromId!).updateChildValues([requestId: 1])
+            
+            self.request = Request()
+            self.request?.setValuesForKeys(values)
+            self.request?.requestId = requestId
+            NetworkManager.sendChargerRequestToServer(request: self.request!, user: self.user!)
             
             self.showPending()
         }
@@ -52,37 +59,12 @@ extension HelpController {
         UIView.animate(withDuration: 1, delay: 0, usingSpringWithDamping: 1, initialSpringVelocity: 1, options: .curveEaseOut, animations: {
             
             self.view.layoutIfNeeded()
-            self.setupAcceptanceObserver()
+            //self.setupAcceptanceObserver()
+            self.setupObserverOfMyRequest()
             
         }, completion: nil)
         
         textBox.resignFirstResponder()
-        
-    }
-    
-    func setupAcceptanceObserver() {
-        guard let uid = FIRAuth.auth()?.currentUser?.uid else {
-            return
-        }
-        
-        let when = DispatchTime.now() + 1
-        DispatchQueue.main.asyncAfter(deadline: when) {
-        
-            FIRDatabase.database().reference().child("user-messages").child(uid).observeSingleEvent(of: .childAdded, with: {
-                (snapshot) in
-                
-                let currIndex = self.masterController?.currentIndex
-                if currIndex != 1 {
-                    self.masterController?.goLeftToHelpController(goLeft: currIndex == 2)
-                }
-
-                //self.showSuccessLabel()
-
-                self.showSuccessLabelForUser(uid: snapshot.key)
-                
-            }, withCancel: nil)
-        
-        }
         
     }
     
@@ -105,13 +87,18 @@ extension HelpController {
     }
     
     func showChatController(user: User) {
+        let chatController = ChatLogContainerController()
+        
         let chatLogController = ChatLogController(collectionViewLayout: UICollectionViewFlowLayout())
         chatLogController.user = user
         chatLogController.helpController = self
+        chatLogController.request = request
         chatLogController.isRequester = true
-        let nc = UINavigationController(rootViewController: chatLogController)
-        nc.modalTransitionStyle = .crossDissolve
-        self.present(nc, animated: true, completion: nil)
+        chatLogController.masterController = masterController
+        chatController.centerViewController = chatLogController
+        
+        chatController.modalTransitionStyle = .crossDissolve
+        self.present(chatController, animated: true, completion: nil)
     }
     
     func fetchUserAndDoSomething(user: User) {

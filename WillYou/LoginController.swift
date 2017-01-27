@@ -56,6 +56,7 @@ class LoginController: UIViewController, UserDelegate {
     override func viewDidLoad() {
         super.viewDidLoad()
         
+        emailTextField.becomeFirstResponder()
         setupView()
         
         observeKeyboardNotifications()

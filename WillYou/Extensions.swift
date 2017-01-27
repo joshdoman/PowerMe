@@ -26,8 +26,11 @@ extension UIImageView {
         }
         
         //otherwise fire off a new download
-        let url = URL(string: urlString)
-        URLSession.shared.dataTask(with: url!, completionHandler: { (data, resp, err) in
+        guard let url = URL(string: urlString) else {
+            return
+        }
+        
+        URLSession.shared.dataTask(with: url, completionHandler: { (data, resp, err) in
             
             if err != nil {
                 print(err!)
@@ -83,7 +86,6 @@ extension Request {
 extension User {
     
     func loadUserUsingCacheWithUserId(uid: String, controller: UserDelegate) {
-        
         if let cachedUser = userCache.object(forKey: uid as AnyObject) as? User {
             self.copyUser(user: cachedUser)
             controller.fetchUserAndDoSomething(user: self)
@@ -207,6 +209,7 @@ extension UserDefaults {
     enum UserDefaultsKeys: String {
         case isLoggedIn
         case hasPendingRequest
+        case isMessaging
     }
     
     func setIsLoggedIn(value: Bool) {
@@ -226,7 +229,6 @@ extension UserDefaults {
     func isLoggedIn() -> Bool {
         return bool(forKey: UserDefaultsKeys.isLoggedIn.rawValue)
     }
-    
 }
 
 extension UILabel {
@@ -243,5 +245,18 @@ extension String {
         let maxSize = CGSize(width: width, height: CGFloat.greatestFiniteMagnitude)
         let actualSize = self.boundingRect(with: maxSize, options: [.usesLineFragmentOrigin], attributes: [NSFontAttributeName: font], context: nil)
         return actualSize.height
+    }
+}
+
+extension UIBarButtonItem {
+    static func itemWith(colorfulImage: UIImage?, target: AnyObject, action: Selector) -> UIBarButtonItem {
+        let button = UIButton(type: .custom)
+        button.setImage(colorfulImage?.withRenderingMode(UIImageRenderingMode.alwaysTemplate), for: .normal)
+        button.tintColor = UIColor(r: 0, g: 122, b: 255)
+        button.frame = CGRect(x: 0, y: 0, width: 44, height: 44)
+        button.addTarget(target, action: action, for: .touchUpInside)
+        
+        let barButtonItem = UIBarButtonItem(customView: button)
+        return barButtonItem
     }
 }

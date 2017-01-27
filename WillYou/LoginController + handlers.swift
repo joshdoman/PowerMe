@@ -50,6 +50,10 @@ extension LoginController {
             self.present(mc, animated: true, completion: nil)
             
         })
+        
+        if let deviceToken = Model.currentToken {
+            FIRDatabase.database().reference().child("users").child(user.uid!).updateChildValues(["token": deviceToken])
+        }
     }
     
 }

@@ -17,6 +17,8 @@ class HelpController: UIViewController, UITextViewDelegate, UserDelegate {
     
     var helpController: HelpController?
     var masterController: MasterController?
+    
+    var request: Request?
 
     lazy var getHelpButton: UIButton = {
         let button = UIButton(type: .system)
@@ -506,5 +508,23 @@ class HelpController: UIViewController, UITextViewDelegate, UserDelegate {
         if UserDefaults.standard.hasPendingRequest() {
             showPending()
         }
+    }
+    
+    func setupObserverOfMyRequest() {
+        guard let requestId = request?.requestId else {
+            return
+        }
+        
+        FIRDatabase.database().reference().child("requests").child(requestId).observe(.childAdded, with: { (snapshot) in
+            if snapshot.key == "helperId" {
+                let currIndex = self.masterController?.currentIndex
+                if currIndex != 1 {
+                    self.masterController?.goLeftToHelpController(goLeft: currIndex == 2)
+                }
+                
+                self.showSuccessLabelForUser(uid: snapshot.value as! String)
+            }
+            
+        }, withCancel: nil)
     }
 }

@@ -1,9 +1,9 @@
 //
-//  ChatLogController.swift
+//  ChatLogController2.swift
 //  WillYou
 //
-//  Created by Josh Doman on 12/15/16.
-//  Copyright © 2016 Josh Doman. All rights reserved.
+//  Created by Josh Doman on 1/4/17.
+//  Copyright © 2017 Josh Doman. All rights reserved.
 //
 
 import UIKit
@@ -11,37 +11,20 @@ import Firebase
 import MobileCoreServices
 import AVFoundation
 
-class ChatLogController: UICollectionViewController, UITextFieldDelegate, UICollectionViewDelegateFlowLayout, UIImagePickerControllerDelegate, UINavigationControllerDelegate {
+class ChatLogCenterController: UICollectionViewController, UITextFieldDelegate, UICollectionViewDelegateFlowLayout, UIImagePickerControllerDelegate, UINavigationControllerDelegate {
     
     var feedController: FeedController?
+    var feedController2: FeedController2?
     var helpController: HelpController?
     var masterController: MasterController?
     var isRequester: Bool?
     
     var user: User? {
         didSet {
-            feedController?.masterController?.setCanSwipe(canSwipe: false)
+            feedController2?.masterController?.setCanSwipe(canSwipe: false)
             
             setupNavigationBar()
             observeMessages()
-        }
-    }
-    
-    var delegate: CenterViewControllerDelegate?
-    var currentState: SlideOutState = .bothCollapsed {
-        didSet {
-            switch (currentState) {
-            case .bothCollapsed:
-                inputAccessoryView?.isHidden = false
-                let image = UIImage(named: "Arrow-right")
-                navigationItem.leftBarButtonItem = UIBarButtonItem.itemWith(colorfulImage: image, target: self, action: #selector(handleShow))
-            case .leftPanelExpanded:
-                inputAccessoryView?.isHidden = true
-                let image = UIImage(named: "Arrow-left")
-                navigationItem.leftBarButtonItem = UIBarButtonItem.itemWith(colorfulImage: image, target: self, action: #selector(handleShow))
-            default:
-                break
-            }
         }
     }
     
@@ -52,13 +35,12 @@ class ChatLogController: UICollectionViewController, UITextFieldDelegate, UIColl
         }
     }
     
+    var delegate: CenterViewControllerDelegate?
+    
     func setupNavigationBar() {
         setupNavBarTitle()
-        let image = UIImage(named: "Arrow-right")
-        navigationItem.leftBarButtonItem = UIBarButtonItem.itemWith(colorfulImage: image, target: self, action: #selector(handleShow))
-        
-        //navigationItem.leftBarButtonItem = UIBarButtonItem(title: "Cancel", style: .plain, target: self, action: #selector(handleDeny))
-        //navigationItem.rightBarButtonItem = UIBarButtonItem(title: "Done!", style: .plain, target: self, action: #selector(handleDone))
+        navigationItem.leftBarButtonItem = UIBarButtonItem(title: "Cancel", style: .plain, target: self, action: #selector(handleDeny))
+        navigationItem.rightBarButtonItem = UIBarButtonItem(title: "Done!", style: .plain, target: self, action: #selector(handleDone))
     }
     
     let profileImageView: UIImageView = {
@@ -83,7 +65,7 @@ class ChatLogController: UICollectionViewController, UITextFieldDelegate, UIColl
         }
         
         containerView.addSubview(profileImageView)
-
+        
         profileImageView.leftAnchor.constraint(equalTo: containerView.leftAnchor).isActive = true
         profileImageView.centerYAnchor.constraint(equalTo: containerView.centerYAnchor).isActive = true
         profileImageView.widthAnchor.constraint(equalToConstant: 40).isActive = true
@@ -191,7 +173,7 @@ class ChatLogController: UICollectionViewController, UITextFieldDelegate, UIColl
                     if self.isRequester! {
                         self.masterController?.removeMyOutstandingRequest(helper: self.user)
                     }
-                    self.feedController?.removeRequest(request: self.request!)
+                    self.feedController2?.removeRequest(request: self.request!)
                     _ = self.navigationController?.popViewController(animated: true)
                     self.dismiss(animated: true, completion: nil)
                 }))
@@ -218,7 +200,7 @@ class ChatLogController: UICollectionViewController, UITextFieldDelegate, UIColl
     
     override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated)
-        feedController?.masterController?.setCanSwipe(canSwipe: true)
+        feedController2?.masterController?.setCanSwipe(canSwipe: true)
     }
     
     lazy var inputContainerView: ChatInputContainerView = {
@@ -598,60 +580,62 @@ class ChatLogController: UICollectionViewController, UITextFieldDelegate, UIColl
     }
     
     func handleDeny() {
-
-        
-        self.removeObservers()
-        
-        if !self.isRequester! {
-            FIRDatabase.database().reference().child("requests").child((self.request?.requestId)!).child("helperId").removeValue()
-        }
-        self.resignFirstResponder()
-        self.inputAccessoryView?.resignFirstResponder()
-        self.inputAccessoryView?.removeFromSuperview()
-        
-        self.helpController?.handleCancel()
-        self.feedController?.removeRequest(request: self.request!)
-        self.feedController?.masterController?.removeAllMessages()
-        _ = self.navigationController?.popViewController(animated: true)
-        self.dismiss(animated: true, completion: nil)
-        
-        if let token = self.user?.token, let name = Model.currentUser?.name {
-            NetworkManager.sendNotification(toToken: token, message: "\(name) has canceled.")
-        }
+        let alertController = UIAlertController(title: "Are you sure you wish to cancel?", message: nil, preferredStyle: UIAlertControllerStyle.alert)
+        alertController.addAction(UIAlertAction(title: "No", style: UIAlertActionStyle.default, handler: nil))
+        alertController.addAction(UIAlertAction(title: "Yes", style: UIAlertActionStyle.default, handler: { action -> Void in
+            self.removeObservers()
+            
+            if !self.isRequester! {
+                FIRDatabase.database().reference().child("requests").child((self.request?.requestId)!).child("helperId").removeValue()
+            }
+            self.resignFirstResponder()
+            self.inputAccessoryView?.resignFirstResponder()
+            self.inputAccessoryView?.removeFromSuperview()
+            
+            self.helpController?.handleCancel()
+            self.feedController2?.removeRequest(request: self.request!)
+            self.feedController2?.masterController?.removeAllMessages()
+            _ = self.navigationController?.popViewController(animated: true)
+            self.dismiss(animated: true, completion: nil)
+            
+            if let token = self.user?.token, let name = Model.currentUser?.name {
+                NetworkManager.sendNotification(toToken: token, message: "\(name) has canceled.")
+            }
+        }))
+        self.present(alertController, animated: true, completion: nil)
     }
     
     func handleDone() {
-        self.removeObservers()
-        
-        self.resignFirstResponder()
-        self.inputAccessoryView?.resignFirstResponder()
-        self.inputAccessoryView?.removeFromSuperview()
-        
-        if self.isRequester! {
-            self.masterController?.removeMyOutstandingRequest(helper: self.user)
-        } else {
-            self.masterController?.addCompletedRequest(requestId: (self.request?.requestId)!, helper: Model.currentUser!)
-            self.feedController?.removeRequest(request: self.request!)
+        let str = isRequester! ? "Please confirm that you have returned \((user?.name)!)'s charger." : "Please confirm that \((user?.name)!) has returned your charger."
+        let alertController = UIAlertController(title: str, message: nil, preferredStyle: UIAlertControllerStyle.alert)
+        alertController.addAction(UIAlertAction(title: "Cancel", style: UIAlertActionStyle.default, handler: nil))
+        alertController.addAction(UIAlertAction(title: "Confirm", style: UIAlertActionStyle.default, handler: { action -> Void in
+            self.removeObservers()
             
-        }
-        _ = self.navigationController?.popViewController(animated: true)
-        self.dismiss(animated: true, completion: nil)
-        
-        if let token = self.user?.token, let name = Model.currentUser?.name {
-            let str = self.isRequester! ? " Thanks for helping!" : ""
-            NetworkManager.sendNotification(toToken: token, message: "\(name) just pressed \"Done.\"\(str)")
-        }
+            self.resignFirstResponder()
+            self.inputAccessoryView?.resignFirstResponder()
+            self.inputAccessoryView?.removeFromSuperview()
+            
+            if self.isRequester! {
+                self.masterController?.removeMyOutstandingRequest(helper: self.user)
+            } else {
+                self.masterController?.addCompletedRequest(requestId: (self.request?.requestId)!, helper: Model.currentUser!)
+                self.feedController2?.removeRequest(request: self.request!)
+                
+            }
+            _ = self.navigationController?.popViewController(animated: true)
+            self.dismiss(animated: true, completion: nil)
+            
+            if let token = self.user?.token, let name = Model.currentUser?.name {
+                let str = self.isRequester! ? " Thanks for helping!" : ""
+                NetworkManager.sendNotification(toToken: token, message: "\(name) just pressed \"Done.\"\(str)")
+            }
+        }))
+        self.present(alertController, animated: true, completion: nil)
     }
     
     func removeObservers() {
-        guard let uid = FIRAuth.auth()?.currentUser?.uid else {
-            return
-        }
-        
-        FIRDatabase.database().reference().child("helps").removeAllObservers()
-        FIRDatabase.database().reference().child("users").child(uid).child("token").removeValue()
-        
-        guard let toId = user?.uid, let requestId = request?.requestId else {
+        guard let uid = FIRAuth.auth()?.currentUser?.uid, let toId = user?.uid, let requestId = request?.requestId else {
             return
         }
         
@@ -661,61 +645,21 @@ class ChatLogController: UICollectionViewController, UITextFieldDelegate, UIColl
     }
     
     func handleShow() {
-        switch (currentState) {
-        case .leftPanelExpanded:
-            inputAccessoryView?.isHidden = false
-            let image = UIImage(named: "Arrow-right")
-            navigationItem.leftBarButtonItem = UIBarButtonItem.itemWith(colorfulImage: image, target: self, action: #selector(handleShow))
-        case .bothCollapsed:
-            inputAccessoryView?.isHidden = true
-            let image = UIImage(named: "Arrow-left")
-            navigationItem.leftBarButtonItem = UIBarButtonItem.itemWith(colorfulImage: image, target: self, action: #selector(handleShow))
-        default:
-            break
-        }
-        
         delegate?.toggleLeftPanel!()
-    }
-    
-    func handleLogout() {
-        removeObservers()
-
-        do {
-            try FIRAuth.auth()?.signOut()
-        } catch let logoutError {
-            print(logoutError)
-        }
-        
-        UserDefaults.standard.setIsLoggedIn(value: false)
-        let sc = SignInController()
-        sc.modalTransitionStyle = .crossDissolve
-        self.present(sc, animated: true, completion: nil)
     }
 }
 
-extension ChatLogController: SidePanelViewControllerDelegate {
+extension ChatLogCenterController: SidePanelViewControllerDelegate {
     func buttonSelected(button: ButtonState) {
         switch (button) {
         case .done:
             print("done")
-            handleDone()
         case .cancel:
             print("cancel")
-            handleDeny()
-        case .logout:
-            print("logout")
-            handleLogout()
         }
-            
+        
         delegate?.collapseSidePanels?()
     }
-    
-    func getIsRequester() -> Bool {
-        if let isR = isRequester {
-            return isR
-        } else {
-            return false
-        }
-    }
 }
+
 

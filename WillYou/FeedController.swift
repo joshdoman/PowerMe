@@ -48,6 +48,14 @@ class FeedController: UITableViewController, RequestDelegate, UserDelegate {
         }
         
         let ref = FIRDatabase.database().reference().child("outstanding-requests-by-user").child(charger)
+        
+        ref.observeSingleEvent(of: .value, with: { (snapshot) in
+            if let dictionary = snapshot.value as? [String: AnyObject] {
+                let requests = Array(dictionary.keys)
+                print(requests)
+            }
+        })
+        
         ref.observe(.childAdded, with: { (snapshot) in
             print(snapshot)
             if snapshot.key != uid, let dictionary = snapshot.value as? [String: AnyObject] {

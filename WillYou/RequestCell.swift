@@ -18,14 +18,15 @@ class RequestCell: UITableViewCell, UserDelegate {
     }
     
     var expanded: Bool?
-    var feedController: FeedController2?
+    var feedController: FeedController?
     
     func setupCell() {
+        expanded = false
         setupNameAndProfileImage()
         
-        detailTextLabel?.text = request?.location!
-        
-        if let timestamp = request?.timestamp {
+        if let location = request?.location, let timestamp = request?.timestamp {
+            detailTextLabel?.text = location
+
             let timestampDate = Date(timeIntervalSince1970: timestamp.doubleValue)
             
             let dateFormatter = DateFormatter()
@@ -37,12 +38,10 @@ class RequestCell: UITableViewCell, UserDelegate {
     var requester: User?
 
     fileprivate func setupNameAndProfileImage() {
-        message.text = "\"\((request?.message)!)\""
-        if let charger = request?.charger {
+        if let msg = request?.message, let charger = request?.charger, let fromId = request?.fromId {
+            message.text = "\"\(msg)\""
             chargerLabel.text = charger
-        }
-        requester = User()
-        if let fromId = request?.fromId {
+            requester = User()
             requester?.loadUserUsingCacheWithUserId(uid: fromId, controller: self)
         }
     }
@@ -120,10 +119,13 @@ class RequestCell: UITableViewCell, UserDelegate {
     
     override func layoutSubviews() {
         super.layoutSubviews()
+        guard let textLabel = textLabel, let detailTextLabel = detailTextLabel else {
+            return
+        }
         
-        textLabel?.frame = CGRect(x: 120, y: 40, width: textLabel!.frame.width, height: textLabel!.frame.height)
+        textLabel.frame = CGRect(x: 120, y: 40, width: textLabel.frame.width, height: textLabel.frame.height)
         
-        detailTextLabel?.frame = CGRect(x: 120, y: 40 + 4 + textLabel!.frame.height, width: detailTextLabel!.frame.width, height: detailTextLabel!.frame.height)
+        detailTextLabel.frame = CGRect(x: 120, y: 40 + 4 + textLabel.frame.height, width: detailTextLabel.frame.width, height: detailTextLabel.frame.height)
     }
     
     var messageHeightAnchor: NSLayoutConstraint?
@@ -155,7 +157,9 @@ class RequestCell: UITableViewCell, UserDelegate {
         timeLabel.rightAnchor.constraint(equalTo: self.rightAnchor).isActive = true
         timeLabel.topAnchor.constraint(equalTo: self.topAnchor, constant: 18).isActive = true
         timeLabel.widthAnchor.constraint(equalToConstant: 100).isActive = true
-        timeLabel.heightAnchor.constraint(equalTo: (textLabel?.heightAnchor)!).isActive = true
+        if let heightAnchor = textLabel?.heightAnchor {
+            timeLabel.heightAnchor.constraint(equalTo: heightAnchor).isActive = true
+        }
         
         message.leftAnchor.constraint(equalTo: profileImageView.rightAnchor, constant: 12).isActive = true
         message.topAnchor.constraint(equalTo: profileImageView.bottomAnchor, constant: -16).isActive = true

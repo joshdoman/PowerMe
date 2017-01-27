@@ -68,7 +68,7 @@ extension RegisterController {
                     }
                     
                     if let profileImageUrl = metadata?.downloadURL()?.absoluteString {
-                        let values = ["name": name, "email": email, "charger": charger, "profileImageUrl": profileImageUrl]
+                        let values = ["name": name, "charger": charger, "profileImageUrl": profileImageUrl]
                         self.registerUserInfoDatabaseWithUID(uid: uid, values: values as [String : AnyObject])
                     }
                 })
@@ -81,6 +81,10 @@ extension RegisterController {
         
         let usersReference = ref.child("users").child(uid) //make users reference
         
+        if let deviceToken = Model.currentToken {
+            usersReference.updateChildValues(["token": deviceToken])
+        }
+        
         usersReference.updateChildValues(values, withCompletionBlock: { (err, ref)
             in
             
@@ -88,9 +92,6 @@ extension RegisterController {
                 print(err!)
                 return
             }
-            
-//            let user = User()
-//            user.setValuesForKeys(values)
             
             UserDefaults.standard.setIsLoggedIn(value: true)
             UserDefaults.standard.setHasPendingRequest(value: false)

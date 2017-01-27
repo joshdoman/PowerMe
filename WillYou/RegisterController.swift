@@ -1,12 +1,4 @@
 //
-//  RegisterController.swift
-//  WillYou
-//
-//  Created by Josh Doman on 12/13/16.
-//  Copyright © 2016 Josh Doman. All rights reserved.
-//
-
-//
 //  LoginController.swift
 //  WillYou
 //

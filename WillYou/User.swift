@@ -15,6 +15,7 @@ class User: NSObject {
     var email: String?
     var charger: String?
     var profileImageUrl: String?
+    var token: String?
     
     func copyUser(user: User) {
         self.uid = user.uid
@@ -22,6 +23,7 @@ class User: NSObject {
         self.email = user.email
         self.charger = user.charger
         self.profileImageUrl = user.profileImageUrl
+        self.token = user.token
     }
     
 }

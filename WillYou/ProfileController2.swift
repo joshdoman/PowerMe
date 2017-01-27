@@ -209,6 +209,10 @@ class ProfileController2: UIViewController, UIImagePickerControllerDelegate, UIN
     }
     
     func handleLogout() {
+        guard let uid = FIRAuth.auth()?.currentUser?.uid else {
+            return
+        }
+        
         do {
             try FIRAuth.auth()?.signOut()
         } catch let logoutError {
@@ -217,10 +221,12 @@ class ProfileController2: UIViewController, UIImagePickerControllerDelegate, UIN
         
         FIRDatabase.database().reference().child("user-messages").removeAllObservers()
         FIRDatabase.database().reference().child("helps").removeAllObservers()
-        //FIRDatabase.database().reference().child("user-requests").child((user?.uid)!).removeAllObservers()
-        //FIRDatabase.database().reference().child("user-helps").child((user?.uid)!).removeAllObservers()
+        FIRDatabase.database().reference().child("users").child(uid).child("token").removeValue()
         
-        masterController?.handleLogout()
+        UserDefaults.standard.setIsLoggedIn(value: false)
+        let sc = SignInController()
+        sc.modalTransitionStyle = .crossDissolve
+        present(sc, animated: true, completion: nil)
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
@@ -265,11 +271,15 @@ class ProfileController2: UIViewController, UIImagePickerControllerDelegate, UIN
     var requestDictionary = [String: Request]()
     
     func observeMyRequests() {
-        FIRDatabase.database().reference().child("user-requests").child((user?.uid)!).observe(.childAdded, with: { (snapshot) in
+        guard let uid = FIRAuth.auth()?.currentUser?.uid else {
+            return
+        }
+        
+        FIRDatabase.database().reference().child("user-requests").child(uid).observe(.childAdded, with: { (snapshot) in
             self.fetchRequestWithKey(child: "user-requests", id: snapshot.key)
         }, withCancel: nil)
         
-        FIRDatabase.database().reference().child("user-helps").child((user?.uid)!).observe(.childAdded, with: { (snapshot) in
+        FIRDatabase.database().reference().child("user-helps").child(uid).observe(.childAdded, with: { (snapshot) in
             self.fetchRequestWithKey(child: "user-helps", id: snapshot.key)
         }, withCancel: nil)
         
